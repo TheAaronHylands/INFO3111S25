@@ -25,13 +25,13 @@ struct sVertex
     float g;
     float b;
 };
-
-sVertex vertices[3] =
-{
-    { 3.f, -0.4f, 0.0f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.0f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.0f, 0.f, 0.f, 1.f }
-};
+//
+//sVertex vertices[3] =
+//{
+//    { 3.f, -0.4f, 0.0f, 1.f, 0.f, 0.f },
+//    {  0.6f, -0.4f, 0.0f, 0.f, 1.f, 0.f },
+//    {   0.f,  0.6f, 0.0f, 0.f, 0.f, 1.f }
+//};
 
 sVertex* pVerticies = NULL;
 
@@ -241,10 +241,10 @@ int main(void)
 
     glEnableVertexAttribArray(vpos_location);
     glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(vertices[0]), (void*)0);
+        sizeof(sVertex), (void*)0);
     glEnableVertexAttribArray(vcol_location);
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(vertices[0]), (void*)(sizeof(float) * 3));
+        sizeof(sVertex), (void*)(sizeof(float) * 3));
     while (!glfwWindowShouldClose(window))
     {
         float ratio;
