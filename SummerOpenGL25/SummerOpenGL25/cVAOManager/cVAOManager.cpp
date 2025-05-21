@@ -1,6 +1,6 @@
 #include "cVAOManager.h"
 
-//#include "globalOpenGLStuff.h"
+#include "../GlobalOpenGL.h"
 
 #include <fstream>
 
