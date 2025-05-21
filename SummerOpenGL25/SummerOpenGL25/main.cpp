@@ -13,8 +13,11 @@
 #include <stdio.h>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <iostream>
+
+#include "cShaderManager/cShaderManager.h"
 
 struct sVertex
 {
@@ -27,29 +30,31 @@ struct sVertex
 };
 
 sVertex* pVerticies = NULL;
+cShaderManager* g_pTheShaderManager = NULL;
 
 unsigned int g_NumVerticiesToDraw = 0;
 unsigned int g_SizeOfVertexArrayInBytes = 0;
+glm::vec3 g_cameraEye = glm::vec3(0.0, 0.0, -30.0f);
 
-static const char* vertex_shader_text =
-"#version 110\n"
-"uniform mat4 MVP;\n"
-"attribute vec3 vCol;\n"
-"attribute vec3 vPos;\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = MVP * vec4(vPos, 1.0);\n"
-"    color = vCol;\n"
-"}\n";
-
-static const char* fragment_shader_text =
-"#version 110\n"
-"varying vec3 color;\n"
-"void main()\n"
-"{\n"
-"    gl_FragColor = vec4(color, 1.0);\n"
-"}\n";
+//static const char* vertex_shader_text =
+//"#version 110\n"
+//"uniform mat4 MVP;\n"
+//"attribute vec3 vCol;\n"
+//"attribute vec3 vPos;\n"
+//"varying vec3 color;\n"
+//"void main()\n"
+//"{\n"
+//"    gl_Position = MVP * vec4(vPos, 1.0);\n"
+//"    color = vCol;\n"
+//"}\n";
+//
+//static const char* fragment_shader_text =
+//"#version 110\n"
+//"varying vec3 color;\n"
+//"void main()\n"
+//"{\n"
+//"    gl_FragColor = vec4(color, 1.0);\n"
+//"}\n";
 
 bool LoadPLY_XYZ_Format_With_Indicies(std::string filename)
 {
@@ -288,12 +293,47 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+    const float camera_speed = 0.5f;
+
+    if (key == GLFW_KEY_A)
+    {
+        ::g_cameraEye.x += camera_speed;
+    }
+
+    if (key == GLFW_KEY_D)
+    {
+        ::g_cameraEye.x -= camera_speed;
+    }
+
+    if (key == GLFW_KEY_W)
+    {
+        ::g_cameraEye.z += camera_speed;
+    }
+
+    if (key == GLFW_KEY_S)
+    {
+        ::g_cameraEye.z -= camera_speed;
+    }
+
+    if (key == GLFW_KEY_Q)
+    {
+        ::g_cameraEye.y += camera_speed;
+    }
+
+    if (key == GLFW_KEY_E)
+    {
+        ::g_cameraEye.y -= camera_speed;
+    }
 }
 
 int main(void)
 {
     GLFWwindow* window;
-    GLuint vertex_buffer, vertex_shader, fragment_shader, program;
+    GLuint vertex_buffer;
+    //GLuint vertex_shader;
+    //GLuint fragment_shader;
+    GLuint program;
     GLint mvp_location, vpos_location, vcol_location;
 
     glfwSetErrorCallback(error_callback);
@@ -336,7 +376,30 @@ int main(void)
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBufferData(GL_ARRAY_BUFFER, g_SizeOfVertexArrayInBytes, pVerticies, GL_STATIC_DRAW);
 
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    ::g_pTheShaderManager = new cShaderManager();
+
+    ::g_pTheShaderManager->setBasePath("assets/shaders/");
+
+    cShaderManager::cShader vert_shader;
+    vert_shader.fileName = "vertex_shader.glsl";
+
+    cShaderManager::cShader frag_shader;
+    frag_shader.fileName = "fragment_shader.glsl";
+
+
+    if (::g_pTheShaderManager->createProgramFromFile("shader1", vert_shader, frag_shader))
+    {
+        std::cout << "Shaders succesfully created!" << std::endl;
+    }
+    else
+    {
+        std::cout << ::g_pTheShaderManager->getLastError() << std::endl;
+    }
+
+    program = ::g_pTheShaderManager->getIDFromFriendlyName("shader1");
+
+
+   /* vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
     glCompileShader(vertex_shader);
 
@@ -347,7 +410,7 @@ int main(void)
 
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
+    glLinkProgram(program);*/
 
     mvp_location = glGetUniformLocation(program, "MVP");
     vpos_location = glGetAttribLocation(program, "vPos");
@@ -391,11 +454,10 @@ int main(void)
 
         v = glm::mat4(1.0f);
 
-        glm::vec3 cameraEye = glm::vec3(0.0, 0.0, -30.0f);
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        v = glm::lookAt(cameraEye,
+        v = glm::lookAt(g_cameraEye,
             cameraTarget,
             upVector);
 
@@ -406,6 +468,13 @@ int main(void)
         glUseProgram(program);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        std::stringstream ssWindowTitle;
+
+        ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
+            << ::g_cameraEye.y << ", " << ::g_cameraEye.z << std::endl;
+
+        glfwSetWindowTitle(window, ssWindowTitle.str().c_str());
 
 
         //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
