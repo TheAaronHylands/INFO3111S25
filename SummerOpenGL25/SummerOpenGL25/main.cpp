@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "cShaderManager/cShaderManager.h"
+#include "cVAOManager/cVAOManager.h"
 
 struct sVertex
 {
@@ -31,6 +32,7 @@ struct sVertex
 
 sVertex* pVerticies = NULL;
 cShaderManager* g_pTheShaderManager = NULL;
+cVAOManager* g_pMeshManager = NULL;
 
 unsigned int g_NumVerticiesToDraw = 0;
 unsigned int g_SizeOfVertexArrayInBytes = 0;
@@ -357,7 +359,7 @@ int main(void)
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
-    bool loaded = LoadPLY_XYZ_Format_With_Indicies("assets/models/cow.ply");
+    /*bool loaded = LoadPLY_XYZ_Format_With_Indicies("assets/models/cow.ply");
 
     if (loaded)
     {
@@ -367,14 +369,14 @@ int main(void)
     {
         std::cout << "ALL HOPE IS LOST!!!" << std::endl;
         return -1;
-    }
+    }*/
 
   
 
     // NOTE: OpenGL error checks have been omitted for brevity
-    glGenBuffers(1, &vertex_buffer);
+    /*glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, g_SizeOfVertexArrayInBytes, pVerticies, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, g_SizeOfVertexArrayInBytes, pVerticies, GL_STATIC_DRAW);*/
 
     ::g_pTheShaderManager = new cShaderManager();
 
@@ -413,17 +415,24 @@ int main(void)
     glLinkProgram(program);*/
 
     mvp_location = glGetUniformLocation(program, "MVP");
-    vpos_location = glGetAttribLocation(program, "vPos");
-    vcol_location = glGetAttribLocation(program, "vCol");
+    //vpos_location = glGetAttribLocation(program, "vPos");
+    //vcol_location = glGetAttribLocation(program, "vCol");
 
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(sVertex), (void*)0);
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-        sizeof(sVertex), (void*)(sizeof(float) * 3));
+    //glEnableVertexAttribArray(vpos_location);
+    //glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
+    //    sizeof(sVertex), (void*)0);
+    //glEnableVertexAttribArray(vcol_location);
+    //glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+    //    sizeof(sVertex), (void*)(sizeof(float) * 3));
 
+    ::g_pMeshManager = new cVAOManager();
+    sModelDrawInfo meshInfoCow;
 
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
+        meshInfoCow, program))
+    {
+        std::cout << "Cow not loaded into VAO!" << std::endl;
+    }
 
     while (!glfwWindowShouldClose(window))
     {
@@ -480,7 +489,18 @@ int main(void)
         //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 
-        glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
+        //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
+        sModelDrawInfo modelToDraw;
+
+        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/cow.ply",
+            modelToDraw))
+        {
+            glBindVertexArray(modelToDraw.VAO_ID);
+            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices, 
+                GL_UNSIGNED_INT, (void*)0);
+            glBindVertexArray(0);
+        }
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
