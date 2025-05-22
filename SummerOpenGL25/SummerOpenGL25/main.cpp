@@ -424,7 +424,7 @@ int main(void)
     //glEnableVertexAttribArray(vcol_location);
     //glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
     //    sizeof(sVertex), (void*)(sizeof(float) * 3));
-
+   
     ::g_pMeshManager = new cVAOManager();
     sModelDrawInfo meshInfoCow;
 
@@ -432,6 +432,14 @@ int main(void)
         meshInfoCow, program))
     {
         std::cout << "Cow not loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo meshTeapot;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
+        meshInfoCow, program))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
     }
 
     while (!glfwWindowShouldClose(window))
@@ -497,6 +505,15 @@ int main(void)
         {
             glBindVertexArray(modelToDraw.VAO_ID);
             glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices, 
+                GL_UNSIGNED_INT, (void*)0);
+            glBindVertexArray(0);
+        }
+
+        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/Utah_Teapot.ply",
+            modelToDraw))
+        {
+            glBindVertexArray(modelToDraw.VAO_ID);
+            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
                 GL_UNSIGNED_INT, (void*)0);
             glBindVertexArray(0);
         }
