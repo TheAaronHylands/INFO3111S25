@@ -19,6 +19,7 @@
 
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
+#include "cMeshObject.h"
 
 struct sVertex
 {
@@ -33,6 +34,8 @@ struct sVertex
 sVertex* pVerticies = NULL;
 cShaderManager* g_pTheShaderManager = NULL;
 cVAOManager* g_pMeshManager = NULL;
+
+std::vector<cMeshObject*> g_pMeshesToDraw;
 
 unsigned int g_NumVerticiesToDraw = 0;
 unsigned int g_SizeOfVertexArrayInBytes = 0;
@@ -442,6 +445,30 @@ int main(void)
         std::cout << "Teapot NOT loaded into VAO!" << std::endl;
     }
 
+    sModelDrawInfo dolphinMeshInfo;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
+        dolphinMeshInfo, program))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+    }
+
+    cMeshObject* pCow = new cMeshObject();
+    pCow->bIsWireframe = false;
+    pCow->meshFileName = "assets/models/cow.ply";
+
+    ::g_pMeshesToDraw.push_back(pCow);
+
+    cMeshObject* pTeapot = new cMeshObject();
+    //pTeapot->bIsVisible = false;
+    pTeapot->bIsWireframe = true;
+    pTeapot->meshFileName = "assets/models/Utah_Teapot.ply";
+
+    ::g_pMeshesToDraw.push_back(pTeapot);
+
+    glEnable(GL_DEPTH_TEST);
+    glCullFace(GL_BACK);
+
     while (!glfwWindowShouldClose(window))
     {
         float ratio;
@@ -450,42 +477,75 @@ int main(void)
         glm::mat4 m, p, v, mvp;
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, 640, 480);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //         mat4x4_identity(m);
-        m = glm::mat4(1.0f);
+        for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++)
+        {
+            cMeshObject* pCurrentMesh = ::g_pMeshesToDraw[index];
+            if (!pCurrentMesh->bIsVisible)
+            {
+                continue;
+            }
 
-        //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-        glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
-            (float)glfwGetTime(),
-            glm::vec3(0.0f, 0.0, 1.0f));
+            //         mat4x4_identity(m);
+            m = glm::mat4(1.0f);
 
-        //m = m * rotateZ;
+            //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+            glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
+                (float)glfwGetTime(),
+                glm::vec3(0.0f, 0.0, 1.0f));
 
-        //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        p = glm::perspective(0.6f,
-            ratio,
-            0.1f,
-            1000.0f);
+            //m = m * rotateZ;
 
-        v = glm::mat4(1.0f);
+            //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+            p = glm::perspective(0.6f,
+                ratio,
+                0.1f,
+                1000.0f);
 
-        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+            v = glm::mat4(1.0f);
 
-        v = glm::lookAt(g_cameraEye,
-            cameraTarget,
-            upVector);
+            glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+            glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        //mat4x4_mul(mvp, p, m);
-        mvp = p * v * m;
+            v = glm::lookAt(g_cameraEye,
+                cameraTarget,
+                upVector);
+
+            //mat4x4_mul(mvp, p, m);
+            mvp = p * v * m;
 
 
-        glUseProgram(program);
+            glUseProgram(program);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            if (pCurrentMesh->bIsWireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+            
 
+            //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+            glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+
+            //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
+            sModelDrawInfo modelToDraw;
+
+            if (::g_pMeshManager->FindDrawInfoByModelName(pCurrentMesh->meshFileName,
+                modelToDraw))
+            {
+                glBindVertexArray(modelToDraw.VAO_ID);
+                glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+                    GL_UNSIGNED_INT, (void*)0);
+                glBindVertexArray(0);
+            }
+        }
+
+     
         std::stringstream ssWindowTitle;
 
         ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
@@ -494,13 +554,9 @@ int main(void)
         glfwSetWindowTitle(window, ssWindowTitle.str().c_str());
 
 
-        //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+   
 
-        //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
-        sModelDrawInfo modelToDraw;
-
-        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/cow.ply",
+       /* if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/cow.ply",
             modelToDraw))
         {
             glBindVertexArray(modelToDraw.VAO_ID);
@@ -517,6 +573,17 @@ int main(void)
                 GL_UNSIGNED_INT, (void*)0);
             glBindVertexArray(0);
         }
+
+        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/dolphin.ply",
+            modelToDraw))
+        {
+            glBindVertexArray(modelToDraw.VAO_ID);
+            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+                GL_UNSIGNED_INT, (void*)0);
+            glBindVertexArray(0);
+        }*/
+
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
