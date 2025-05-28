@@ -474,11 +474,13 @@ int main(void)
         float ratio;
         int width, height;
         //       mat4x4 m, p, mvp;
-        glm::mat4 m, p, v, mvp;
+        glm::mat4 matModel, p, v, mvp;
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
-        glViewport(0, 0, 640, 480);
+        glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(program);
 
         for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++)
         {
@@ -489,7 +491,7 @@ int main(void)
             }
 
             //         mat4x4_identity(m);
-            m = glm::mat4(1.0f);
+            matModel = glm::mat4(1.0f);
 
             //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
             glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
@@ -514,10 +516,7 @@ int main(void)
                 upVector);
 
             //mat4x4_mul(mvp, p, m);
-            mvp = p * v * m;
-
-
-            glUseProgram(program);
+            mvp = p * v * matModel;
 
             if (pCurrentMesh->bIsWireframe)
             {
