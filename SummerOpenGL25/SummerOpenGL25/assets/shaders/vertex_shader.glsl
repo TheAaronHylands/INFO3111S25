@@ -1,14 +1,30 @@
-#version 110
+#version 420
 
-uniform mat4 MVP;
+//uniform mat4 MVP;
+uniform mat4 mProj;
+uniform mat4 mView;
+uniform mat4 mModel;
 
-attribute vec3 vCol;
-attribute vec3 vPos;
+uniform bool bUseOverrideColor;
+uniform vec3 colorOverride;
 
-varying vec3 color;
+in vec3 vCol;
+in vec3 vPos;
+
+out vec3 color;
 
 void main()
 {
+	mat4 MVP = mProj * mView * mModel;
+
     gl_Position = MVP * vec4(vPos, 1.0);
-    color = vCol;
+	
+	if (bUseOverrideColor)
+	{
+		color = colorOverride;
+	}
+	else
+	{
+	    color = vCol;
+	}
 };

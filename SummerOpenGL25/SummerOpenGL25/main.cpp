@@ -454,10 +454,23 @@ int main(void)
     }
 
     cMeshObject* pCow = new cMeshObject();
-    pCow->bIsWireframe = false;
+    pCow->bIsWireframe = true;
+    pCow->bOverrideVertexModelColour = true;
+    pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+    pCow->position.x = -10.f;
+    pCow->orientation.z = 90.0f;
     pCow->meshFileName = "assets/models/cow.ply";
 
+    cMeshObject* pCow2 = new cMeshObject();
+    pCow2->bIsWireframe = false;
+    pCow2->bOverrideVertexModelColour = true;
+    pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+    pCow2->position.x = 10.f;
+    pCow2->scale = 0.5f;
+    pCow2->meshFileName = "assets/models/cow.ply";
+
     ::g_pMeshesToDraw.push_back(pCow);
+    ::g_pMeshesToDraw.push_back(pCow2);
 
     cMeshObject* pTeapot = new cMeshObject();
     //pTeapot->bIsVisible = false;
@@ -469,18 +482,42 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
 
+
+
     while (!glfwWindowShouldClose(window))
     {
         float ratio;
         int width, height;
         //       mat4x4 m, p, mvp;
-        glm::mat4 matModel, p, v, mvp;
+        glm::mat4 matModel, matProj, matView, mvp;
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(program);
+
+        GLint proj_location = glGetUniformLocation(program, "mProj");
+        GLint view_location = glGetUniformLocation(program, "mView");
+        GLint Model_location = glGetUniformLocation(program, "mModel");
+
+        //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+        matProj = glm::perspective(0.6f,
+            ratio,
+            0.1f,
+            1000.0f);
+
+        matView = glm::mat4(1.0f);
+
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
+
+        matView = glm::lookAt(g_cameraEye,
+            cameraTarget,
+            upVector);
+
+        glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(matProj));
+        glUniformMatrix4fv(view_location, 1, GL_FALSE, glm::value_ptr(matView));
 
         for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++)
         {
@@ -490,33 +527,50 @@ int main(void)
                 continue;
             }
 
+            GLint useOverrideColor_location = glGetUniformLocation(program, "bUseOverrideColor");
+            GLint overrideColor_location = glGetUniformLocation(program, "colorOverride");
+
+            if (pCurrentMesh->bOverrideVertexModelColour)
+            {
+                glUniform3f(overrideColor_location, pCurrentMesh->colourRGB.r,
+                    pCurrentMesh->colourRGB.g, pCurrentMesh->colourRGB.b);
+
+                glUniform1f(useOverrideColor_location, GL_TRUE); // 1.0f
+
+            }
+            else
+            {
+                glUniform1f(useOverrideColor_location, GL_FALSE);
+            }
+
             //         mat4x4_identity(m);
             matModel = glm::mat4(1.0f);
 
+            glm::mat4 translation = glm::translate(glm::mat4(1.0f), pCurrentMesh->position);
+
             //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+            glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),
+                pCurrentMesh->orientation.x,
+                glm::vec3(1.0f, 0.0f, 0.0f));
+
+            glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),
+                pCurrentMesh->orientation.y,
+                glm::vec3(0.0f, 1.0f, 0.0f));
+
             glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
-                (float)glfwGetTime(),
-                glm::vec3(0.0f, 0.0, 1.0f));
+                pCurrentMesh->orientation.z,
+                glm::vec3(0.0f, 0.0f, 1.0f));
+
+            float uniformScale = pCurrentMesh->scale;
+            glm::mat4 scaleXYZ = glm::scale(glm::mat4(1.0f), 
+                glm::vec3(uniformScale, uniformScale, uniformScale));
+
+            matModel = matModel * translation * rotateX * rotateY * rotateZ * scaleXYZ;
 
             //m = m * rotateZ;
 
-            //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-            p = glm::perspective(0.6f,
-                ratio,
-                0.1f,
-                1000.0f);
-
-            v = glm::mat4(1.0f);
-
-            glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-            glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
-
-            v = glm::lookAt(g_cameraEye,
-                cameraTarget,
-                upVector);
-
             //mat4x4_mul(mvp, p, m);
-            mvp = p * v * matModel;
+            //mvp = matProj * matView * matModel;
 
             if (pCurrentMesh->bIsWireframe)
             {
@@ -529,7 +583,7 @@ int main(void)
             
 
             //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-            glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+            glUniformMatrix4fv(Model_location, 1, GL_FALSE, glm::value_ptr(matModel));
 
             //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
             sModelDrawInfo modelToDraw;
