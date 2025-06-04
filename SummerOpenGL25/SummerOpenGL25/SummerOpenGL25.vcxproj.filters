@@ -39,6 +39,9 @@
     <ClCompile Include="cMeshObject.cpp">
       <Filter>MeshManager</Filter>
     </ClCompile>
+    <ClCompile Include="old-loading.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">

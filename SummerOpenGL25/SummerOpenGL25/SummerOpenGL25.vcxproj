@@ -139,6 +139,7 @@
     <ClCompile Include="cVAOManager\cVAOManager.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="old-loading.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cMeshObject.h" />

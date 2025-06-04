@@ -45,6 +45,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
     const float camera_speed = 0.5f;
 
+
+
     if (key == GLFW_KEY_A)
     {
         ::g_cameraEye.x += camera_speed;
@@ -79,10 +81,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 int main(void)
 {
     GLFWwindow* window;
-    GLuint vertex_buffer;
+
 
     GLuint program;
-    GLint mvp_location, vpos_location, vcol_location;
+    GLint mvp_location;
 
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
@@ -215,7 +217,7 @@ int main(void)
         float ratio;
         int width, height;
         //       mat4x4 m, p, mvp;
-        glm::mat4 matModel, matProj, matView, mvp;
+        glm::mat4 matModel, matProj, matView;
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
         glViewport(0, 0, width, height);

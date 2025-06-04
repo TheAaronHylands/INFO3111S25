@@ -29,6 +29,10 @@
 //"{\n"
 //"    gl_FragColor = vec4(color, 1.0);\n"
 //"}\n";
+// GLint mvp_location, vpos_location, vcol_location;
+
+//    GLuint vertex_buffer;
+
 
 //bool LoadPLY_XYZ_Format_With_Indicies(std::string filename)
 //{
@@ -257,51 +261,51 @@
 //
 //    return true;
 //}
-int main()
-{
-	//GLuint vertex_shader;
-   //GLuint fragment_shader;
-    /*bool loaded = LoadPLY_XYZ_Format_With_Indicies("assets/models/cow.ply");
-
-    if (loaded)
-    {
-        std::cout << "cow is loaded" << std::endl;
-    }
-    else
-    {
-        std::cout << "ALL HOPE IS LOST!!!" << std::endl;
-        return -1;
-    }*/
-
-
-
-    // NOTE: OpenGL error checks have been omitted for brevity
-    /*glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, g_SizeOfVertexArrayInBytes, pVerticies, GL_STATIC_DRAW);*/
-
-    /* vertex_shader = glCreateShader(GL_VERTEX_SHADER);
- glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
- glCompileShader(vertex_shader);
-
- fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
- glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
- glCompileShader(fragment_shader);
- program = glCreateProgram();
-
- glAttachShader(program, vertex_shader);
- glAttachShader(program, fragment_shader);
- glLinkProgram(program);*/
-
- //vpos_location = glGetAttribLocation(program, "vPos");
-//vcol_location = glGetAttribLocation(program, "vCol");
-
-//glEnableVertexAttribArray(vpos_location);
-//glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
-//    sizeof(sVertex), (void*)0);
-//glEnableVertexAttribArray(vcol_location);
-//glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-//    sizeof(sVertex), (void*)(sizeof(float) * 3));
-
-}
+//int main()
+//{
+//	//GLuint vertex_shader;
+//   //GLuint fragment_shader;
+//    /*bool loaded = LoadPLY_XYZ_Format_With_Indicies("assets/models/cow.ply");
+//
+//    if (loaded)
+//    {
+//        std::cout << "cow is loaded" << std::endl;
+//    }
+//    else
+//    {
+//        std::cout << "ALL HOPE IS LOST!!!" << std::endl;
+//        return -1;
+//    }*/
+//
+//
+//
+//    // NOTE: OpenGL error checks have been omitted for brevity
+//    /*glGenBuffers(1, &vertex_buffer);
+//    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+//    glBufferData(GL_ARRAY_BUFFER, g_SizeOfVertexArrayInBytes, pVerticies, GL_STATIC_DRAW);*/
+//
+//    /* vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+// glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+// glCompileShader(vertex_shader);
+//
+// fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+// glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+// glCompileShader(fragment_shader);
+// program = glCreateProgram();
+//
+// glAttachShader(program, vertex_shader);
+// glAttachShader(program, fragment_shader);
+// glLinkProgram(program);*/
+//
+// //vpos_location = glGetAttribLocation(program, "vPos");
+////vcol_location = glGetAttribLocation(program, "vCol");
+//
+////glEnableVertexAttribArray(vpos_location);
+////glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE,
+////    sizeof(sVertex), (void*)0);
+////glEnableVertexAttribArray(vcol_location);
+////glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+////    sizeof(sVertex), (void*)(sizeof(float) * 3));
+//
+//}
    
