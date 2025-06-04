@@ -43,7 +43,9 @@ sModelDrawInfo::sModelDrawInfo()
 bool cVAOManager::LoadModelIntoVAO(
 		std::string fileName, 
 		sModelDrawInfo &drawInfo,
-	    unsigned int shaderProgramID)
+	    unsigned int shaderProgramID,
+		bool hasNormals,
+		bool hasColours)
 
 {
 	// Load the model from file
@@ -52,7 +54,7 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	drawInfo.meshName = fileName;
 
-	if ( ! this->m_LoadTheModel( fileName, drawInfo ) )
+	if ( ! this->m_LoadTheModel( fileName, drawInfo, hasNormals, hasColours))
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
 		return false;
@@ -110,14 +112,14 @@ bool cVAOManager::LoadModelIntoVAO(
 	glEnableVertexAttribArray(vpos_location);	// vPos
 	glVertexAttribPointer( vpos_location, 3,		// vPos
 						   GL_FLOAT, GL_FALSE,
-						   sizeof(float) * 6, 
+						   sizeof(float) * 9, 
 						   ( void* )0);
 
 	glEnableVertexAttribArray(vcol_location);	// vCol
 	glVertexAttribPointer( vcol_location, 3,		// vCol
 						   GL_FLOAT, GL_FALSE,
-						   sizeof(float) * 6, 
-						   ( void* )( sizeof(float) * 3 ));
+						   sizeof(float) * 9, 
+						   ( void* )( sizeof(float) * 6));
 
 	// Now that all the parts are set up, set the VAO to zero
 	glBindVertexArray(0);
@@ -135,6 +137,7 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	return true;
 }
+
 
 
 // We don't want to return an int, likely
@@ -161,7 +164,9 @@ bool cVAOManager::FindDrawInfoByModelName(
 
 
 bool cVAOManager::m_LoadTheModel(std::string fileName,
-								 sModelDrawInfo &drawInfo )
+								 sModelDrawInfo &drawInfo,
+								 bool hasNormals,
+								 bool hasColours )
 {
 	// Open the file. 
 	// Read until we hit the word "vertex"
@@ -214,6 +219,7 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 	struct sVertPly
 	{
 		glm::vec3 pos;
+		glm::vec3 norm;
 		glm::vec4 colour;
 	};
 
@@ -231,14 +237,23 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 //		tempVert.pos.y *= 10.0f;
 //		tempVert.pos.z *= 10.0f;
 
+		if (hasNormals)
+		{
+			thePlyFile >> tempVert.norm.x >> tempVert.norm.y >> tempVert.norm.z;
+		}
 
-		thePlyFile >> tempVert.colour.x >> tempVert.colour.y
-			       >> tempVert.colour.z >> tempVert.colour.w; 
+		if (hasColours)
+		{
+			thePlyFile >> tempVert.colour.x >> tempVert.colour.y
+				>> tempVert.colour.z >> tempVert.colour.w;
 
-		// Scale the colour from 0 to 1, instead of 0 to 255
-		tempVert.colour.x /= 255.0f;
-		tempVert.colour.y /= 255.0f;
-		tempVert.colour.z /= 255.0f;
+			// Scale the colour from 0 to 1, instead of 0 to 255
+			tempVert.colour.x /= 255.0f;
+			tempVert.colour.y /= 255.0f;
+			tempVert.colour.z /= 255.0f;
+
+		}
+	
 
 		// Add too... what? 
 		vecTempPlyVerts.push_back(tempVert);
@@ -251,19 +266,80 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 
 	drawInfo.pVertices = new sVert[drawInfo.numberOfVertices];
 
+	if (hasNormals && hasColours)
+	{
+		for (unsigned int index = 0; index != drawInfo.numberOfVertices; index++)
+		{
+			drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
+			drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
+			drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
+
+			drawInfo.pVertices[index].nx = vecTempPlyVerts[index].norm.x;
+			drawInfo.pVertices[index].ny = vecTempPlyVerts[index].norm.y;
+			drawInfo.pVertices[index].nz = vecTempPlyVerts[index].norm.z;
+
+			drawInfo.pVertices[index].r = vecTempPlyVerts[index].colour.r;
+			drawInfo.pVertices[index].g = vecTempPlyVerts[index].colour.g;
+			drawInfo.pVertices[index].b = vecTempPlyVerts[index].colour.b;
+		}// for ( unsigned int index...
+	}
+	else if (hasNormals)
+	{
+		for (unsigned int index = 0; index != drawInfo.numberOfVertices; index++)
+		{
+			drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
+			drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
+			drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
+
+			drawInfo.pVertices[index].nx = vecTempPlyVerts[index].norm.x;
+			drawInfo.pVertices[index].ny = vecTempPlyVerts[index].norm.y;
+			drawInfo.pVertices[index].nz = vecTempPlyVerts[index].norm.z;
+
+			drawInfo.pVertices[index].r = 0.0f;
+			drawInfo.pVertices[index].g = 1.0f;
+			drawInfo.pVertices[index].b = 0.0f;
+		}// for ( unsigned int index...
+	}
+	else if (hasColours)
+	{
+		for (unsigned int index = 0; index != drawInfo.numberOfVertices; index++)
+		{
+			drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
+			drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
+			drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
+
+			drawInfo.pVertices[index].nx = 0.0f;
+			drawInfo.pVertices[index].ny = 0.0f;
+			drawInfo.pVertices[index].nz = 0.0f;
+
+			drawInfo.pVertices[index].r = vecTempPlyVerts[index].colour.r;
+			drawInfo.pVertices[index].g = vecTempPlyVerts[index].colour.g;
+			drawInfo.pVertices[index].b = vecTempPlyVerts[index].colour.b;
+		}// for ( unsigned int index...
+	}
+	else
+	{
+		for (unsigned int index = 0; index != drawInfo.numberOfVertices; index++)
+		{
+			drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
+			drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
+			drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
+
+			drawInfo.pVertices[index].nx = 0.0f;
+			drawInfo.pVertices[index].ny = 0.0f;
+			drawInfo.pVertices[index].nz = 0.0f;
+
+			drawInfo.pVertices[index].r = 0.0f;
+			drawInfo.pVertices[index].g = 1.0f;
+			drawInfo.pVertices[index].b = 0.0f;
+		}// for ( unsigned int index...
+	}
+	
+
 	// Optional clear array to zero 
 	//memset( drawInfo.pVertices, 0, sizeof(sVert) * drawInfo.numberOfVertices);
 
-	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; index++ )
-	{
-		drawInfo.pVertices[index].x = vecTempPlyVerts[index].pos.x;
-		drawInfo.pVertices[index].y = vecTempPlyVerts[index].pos.y;
-		drawInfo.pVertices[index].z = vecTempPlyVerts[index].pos.z;
-
-		drawInfo.pVertices[index].r = vecTempPlyVerts[index].colour.r;
-		drawInfo.pVertices[index].g = vecTempPlyVerts[index].colour.g;
-		drawInfo.pVertices[index].b = vecTempPlyVerts[index].colour.b;
-	}// for ( unsigned int index...
+	
 
 
 	struct sTriPly

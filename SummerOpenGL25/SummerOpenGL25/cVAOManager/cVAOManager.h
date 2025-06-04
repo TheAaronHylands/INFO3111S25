@@ -13,7 +13,8 @@
 //  vertex structure will also need to change (usually). 
 struct sVert
 {
-	float x, y, z;		// added "z"
+	float x, y, z;
+	float nx, ny, nz;
 	float r, g, b;
 };
 
@@ -51,9 +52,11 @@ class cVAOManager
 {
 public:
 
-	bool LoadModelIntoVAO(std::string fileName, 
-						  sModelDrawInfo &drawInfo, 
-						  unsigned int shaderProgramID);
+	bool LoadModelIntoVAO(std::string fileName,
+		sModelDrawInfo& drawInfo,
+		unsigned int shaderProgramID,
+		bool hasNormals,
+		bool hasColours);
 
 	// We don't want to return an int, likely
 	bool FindDrawInfoByModelName(std::string filename,
@@ -69,7 +72,9 @@ private:
 
 	// Loads the ply model file into a temporary array
 	bool m_LoadTheModel( std::string fileName, 
-						 sModelDrawInfo &drawInfo);
+						 sModelDrawInfo &drawInfo,
+						 bool hasNormals,
+						 bool hasColours);
 
 	std::string m_lastErrorString;
 	void m_AppendTextToLastError(std::string text, bool addNewLineBefore = true);

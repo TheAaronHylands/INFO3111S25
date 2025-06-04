@@ -432,7 +432,7 @@ int main(void)
     sModelDrawInfo meshInfoCow;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
-        meshInfoCow, program))
+        meshInfoCow, program, false, true))
     {
         std::cout << "Cow not loaded into VAO!" << std::endl;
     }
@@ -440,7 +440,7 @@ int main(void)
     sModelDrawInfo meshTeapot;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
-        meshInfoCow, program))
+        meshTeapot, program, false, true))
     {
         std::cout << "Teapot NOT loaded into VAO!" << std::endl;
     }
@@ -448,7 +448,7 @@ int main(void)
     sModelDrawInfo dolphinMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
-        dolphinMeshInfo, program))
+        dolphinMeshInfo, program, false, true))
     {
         std::cout << "Teapot NOT loaded into VAO!" << std::endl;
     }
@@ -475,9 +475,28 @@ int main(void)
     cMeshObject* pTeapot = new cMeshObject();
     //pTeapot->bIsVisible = false;
     pTeapot->bIsWireframe = true;
+    pTeapot->scale = 0.2f;
+    pTeapot->orientation.x = 90.0f;
     pTeapot->meshFileName = "assets/models/Utah_Teapot.ply";
 
+
     ::g_pMeshesToDraw.push_back(pTeapot);
+
+    cMeshObject* pDolphin = new cMeshObject();
+    pDolphin->meshFileName = "assets/models/dolphin.ply";
+    pDolphin->scale = 0.02f;
+    pDolphin->position.y = 10.0f;
+    pDolphin->orientation.z = 45.0f;
+
+    ::g_pMeshesToDraw.push_back(pDolphin);
+
+    cMeshObject* pDolphin2 = new cMeshObject();
+    pDolphin2->meshFileName = "assets/models/dolphin.ply";
+    pDolphin2->scale = 0.02f;
+    pDolphin2->position.y = -10.0f;
+    pDolphin2->orientation.z = -45.0f;
+
+    ::g_pMeshesToDraw.push_back(pDolphin2);
 
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
