@@ -1,5 +1,6 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+//#include <glad/glad.h>
+//#include <GLFW/glfw3.h>
+#include "GlobalOpenGL.h"
 //#include "linmath.h"
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp> // glm::vec3
@@ -38,45 +39,8 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error: %s\n", description);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-    const float camera_speed = 0.5f;
-
-
-
-    if (key == GLFW_KEY_A)
-    {
-        ::g_cameraEye.x += camera_speed;
-    }
-
-    if (key == GLFW_KEY_D)
-    {
-        ::g_cameraEye.x -= camera_speed;
-    }
-
-    if (key == GLFW_KEY_W)
-    {
-        ::g_cameraEye.z += camera_speed;
-    }
-
-    if (key == GLFW_KEY_S)
-    {
-        ::g_cameraEye.z -= camera_speed;
-    }
-
-    if (key == GLFW_KEY_Q)
-    {
-        ::g_cameraEye.y += camera_speed;
-    }
-
-    if (key == GLFW_KEY_E)
-    {
-        ::g_cameraEye.y -= camera_speed;
-    }
-}
 
 int main(void)
 {
@@ -146,6 +110,14 @@ int main(void)
         std::cout << "Cow not loaded into VAO!" << std::endl;
     }
 
+    sModelDrawInfo meshInfoCowXYZ;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_XYZ.ply",
+        meshInfoCow, program, false, false))
+    {
+        std::cout << "CowXYZ not loaded into VAO!" << std::endl;
+    }
+
     sModelDrawInfo meshTeapot;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
@@ -162,8 +134,15 @@ int main(void)
         std::cout << "Teapot NOT loaded into VAO!" << std::endl;
     }
 
+    sModelDrawInfo WarehouseMeshInfo;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_rgba.ply",
+        WarehouseMeshInfo, program, false, true))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+    }
+
     cMeshObject* pCow = new cMeshObject();
-    pCow->bIsWireframe = true;
     pCow->bOverrideVertexModelColour = true;
     pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
     pCow->position.x = -10.f;
@@ -172,18 +151,17 @@ int main(void)
 
     cMeshObject* pCow2 = new cMeshObject();
     pCow2->bIsWireframe = false;
-    pCow2->bOverrideVertexModelColour = true;
-    pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+    //pCow2->bOverrideVertexModelColour = true;
+    //pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
     pCow2->position.x = 10.f;
     pCow2->scale = 0.5f;
-    pCow2->meshFileName = "assets/models/cow.ply";
+    pCow2->meshFileName = "assets/models/cow_XYZ.ply";
 
     ::g_pMeshesToDraw.push_back(pCow);
     ::g_pMeshesToDraw.push_back(pCow2);
 
     cMeshObject* pTeapot = new cMeshObject();
-    //pTeapot->bIsVisible = false;
-    pTeapot->bIsWireframe = true;
+    pTeapot->bIsVisible = false;
     pTeapot->scale = 0.2f;
     pTeapot->orientation.x = 90.0f;
     pTeapot->meshFileName = "assets/models/Utah_Teapot.ply";
@@ -206,6 +184,13 @@ int main(void)
     pDolphin2->orientation.z = -45.0f;
 
     ::g_pMeshesToDraw.push_back(pDolphin2);
+
+    cMeshObject* pWarehouse = new cMeshObject();
+    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_rgba.ply";
+    pWarehouse->position.y = -20.0f;
+    pWarehouse->orientation.y = 90.0f;
+
+    ::g_pMeshesToDraw.push_back(pWarehouse);
 
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);

@@ -42,6 +42,9 @@
     <ClCompile Include="old-loading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="glfw_keyboard_callback_function.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cShaderManager\cShaderManager.h">
