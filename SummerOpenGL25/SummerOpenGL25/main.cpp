@@ -267,42 +267,27 @@ void LoadFilesIntoVAOManager(GLuint program)
     ::g_pMeshManager = new cVAOManager();
     sModelDrawInfo meshInfoCow;
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
-        meshInfoCow, program, false, true))
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_xyz_n_rgba.ply",
+        meshInfoCow, program, true, true))
     {
         std::cout << "Cow not loaded into VAO!" << std::endl;
     }
 
-    sModelDrawInfo meshInfoCowXYZ;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_XYZ.ply",
-        meshInfoCow, program, false, false))
-    {
-        std::cout << "CowXYZ not loaded into VAO!" << std::endl;
-    }
-
-    sModelDrawInfo meshTeapot;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
-        meshTeapot, program, false, true))
-    {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
-    }
 
     sModelDrawInfo dolphinMeshInfo;
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
-        dolphinMeshInfo, program, false, true))
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin_xyz_n_rgba.ply",
+        dolphinMeshInfo, program, true, true))
     {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+        std::cout << "Dolhpin NOT loaded into VAO!" << std::endl;
     }
 
     sModelDrawInfo WarehouseMeshInfo;
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_rgba.ply",
-        WarehouseMeshInfo, program, false, true))
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_n_rgba.ply",
+        WarehouseMeshInfo, program, true, true))
     {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+        std::cout << "Warehouse NOT loaded into VAO!" << std::endl;
     }
 }
 
@@ -313,7 +298,7 @@ void LoadModelsIntoScene()
     pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
     pCow->position.x = -10.f;
     pCow->orientation.z = 90.0f;
-    pCow->meshFileName = "assets/models/cow.ply";
+    pCow->meshFileName = "assets/models/cow_xyz_n_rgba.ply";
 
     cMeshObject* pCow2 = new cMeshObject();
     pCow2->bIsWireframe = false;
@@ -321,7 +306,7 @@ void LoadModelsIntoScene()
     //pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
     pCow2->position.x = 10.f;
     pCow2->scale = 0.5f;
-    pCow2->meshFileName = "assets/models/cow_XYZ.ply";
+    pCow2->meshFileName = "assets/models/cow_xyz_n_rgba.ply";
 
     ::g_pMeshesToDraw.push_back(pCow);
     ::g_pMeshesToDraw.push_back(pCow2);
@@ -335,7 +320,7 @@ void LoadModelsIntoScene()
     ::g_pMeshesToDraw.push_back(pDolphin);
 
     cMeshObject* pDolphin2 = new cMeshObject();
-    pDolphin2->meshFileName = "assets/models/dolphin.ply";
+    pDolphin2->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
     pDolphin2->scale = 0.02f;
     pDolphin2->position.y = -10.0f;
     pDolphin2->orientation.z = -45.0f;
@@ -343,7 +328,7 @@ void LoadModelsIntoScene()
     ::g_pMeshesToDraw.push_back(pDolphin2);
 
     cMeshObject* pWarehouse = new cMeshObject();
-    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_rgba.ply";
+    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_n_rgba.ply";
     pWarehouse->position.y = -20.0f;
     pWarehouse->orientation.y = 90.0f;
 
