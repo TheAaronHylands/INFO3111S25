@@ -93,7 +93,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         if (key == GLFW_KEY_P && action == GLFW_RELEASE)
         {
-            if (::g_selectedObjectIndex >= ::g_pMeshesToDraw.size())
+            if (::g_selectedObjectIndex >= ::g_pMeshesToDraw.size() - 1)
             {
                 ::g_selectedObjectIndex = 0;  
             }
