@@ -251,7 +251,6 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 			tempVert.colour.x /= 255.0f;
 			tempVert.colour.y /= 255.0f;
 			tempVert.colour.z /= 255.0f;
-
 		}
 	
 

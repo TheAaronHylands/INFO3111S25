@@ -26,13 +26,14 @@
 cShaderManager* g_pTheShaderManager = NULL;
 cVAOManager* g_pMeshManager = NULL;
 
-std::vector<cMeshObject*> g_pMeshesToDraw;
-
 unsigned int g_NumVerticiesToDraw = 0;
 unsigned int g_SizeOfVertexArrayInBytes = 0;
 glm::vec3 g_cameraEye = glm::vec3(0.0, 0.0, -30.0f);
 
+void LoadFilesIntoVAOManager(GLuint program);
 
+std::vector<cMeshObject*> g_pMeshesToDraw;
+void LoadModelsIntoScene();
 
 static void error_callback(int error, const char* description)
 {
@@ -95,107 +96,14 @@ int main(void)
 
     program = ::g_pTheShaderManager->getIDFromFriendlyName("shader1");
 
-
-
-
     mvp_location = glGetUniformLocation(program, "MVP");
 
-   
-    ::g_pMeshManager = new cVAOManager();
-    sModelDrawInfo meshInfoCow;
+    LoadFilesIntoVAOManager(program);
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
-        meshInfoCow, program, false, true))
-    {
-        std::cout << "Cow not loaded into VAO!" << std::endl;
-    }
-
-    sModelDrawInfo meshInfoCowXYZ;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_XYZ.ply",
-        meshInfoCow, program, false, false))
-    {
-        std::cout << "CowXYZ not loaded into VAO!" << std::endl;
-    }
-
-    sModelDrawInfo meshTeapot;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
-        meshTeapot, program, false, true))
-    {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
-    }
-
-    sModelDrawInfo dolphinMeshInfo;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
-        dolphinMeshInfo, program, false, true))
-    {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
-    }
-
-    sModelDrawInfo WarehouseMeshInfo;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_rgba.ply",
-        WarehouseMeshInfo, program, false, true))
-    {
-        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
-    }
-
-    cMeshObject* pCow = new cMeshObject();
-    pCow->bOverrideVertexModelColour = true;
-    pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
-    pCow->position.x = -10.f;
-    pCow->orientation.z = 90.0f;
-    pCow->meshFileName = "assets/models/cow.ply";
-
-    cMeshObject* pCow2 = new cMeshObject();
-    pCow2->bIsWireframe = false;
-    //pCow2->bOverrideVertexModelColour = true;
-    //pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
-    pCow2->position.x = 10.f;
-    pCow2->scale = 0.5f;
-    pCow2->meshFileName = "assets/models/cow_XYZ.ply";
-
-    ::g_pMeshesToDraw.push_back(pCow);
-    ::g_pMeshesToDraw.push_back(pCow2);
-
-    cMeshObject* pTeapot = new cMeshObject();
-    pTeapot->bIsVisible = false;
-    pTeapot->scale = 0.2f;
-    pTeapot->orientation.x = 90.0f;
-    pTeapot->meshFileName = "assets/models/Utah_Teapot.ply";
-
-
-    ::g_pMeshesToDraw.push_back(pTeapot);
-
-    cMeshObject* pDolphin = new cMeshObject();
-    pDolphin->meshFileName = "assets/models/dolphin.ply";
-    pDolphin->scale = 0.02f;
-    pDolphin->position.y = 10.0f;
-    pDolphin->orientation.z = 45.0f;
-
-    ::g_pMeshesToDraw.push_back(pDolphin);
-
-    cMeshObject* pDolphin2 = new cMeshObject();
-    pDolphin2->meshFileName = "assets/models/dolphin.ply";
-    pDolphin2->scale = 0.02f;
-    pDolphin2->position.y = -10.0f;
-    pDolphin2->orientation.z = -45.0f;
-
-    ::g_pMeshesToDraw.push_back(pDolphin2);
-
-    cMeshObject* pWarehouse = new cMeshObject();
-    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_rgba.ply";
-    pWarehouse->position.y = -20.0f;
-    pWarehouse->orientation.y = 90.0f;
-
-    ::g_pMeshesToDraw.push_back(pWarehouse);
+    LoadModelsIntoScene();
 
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
-
-
 
     while (!glfwWindowShouldClose(window))
     {
@@ -352,4 +260,92 @@ int main(void)
     glfwDestroyWindow(window);
     glfwTerminate();
     exit(EXIT_SUCCESS);
+}
+
+void LoadFilesIntoVAOManager(GLuint program)
+{
+    ::g_pMeshManager = new cVAOManager();
+    sModelDrawInfo meshInfoCow;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
+        meshInfoCow, program, false, true))
+    {
+        std::cout << "Cow not loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo meshInfoCowXYZ;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_XYZ.ply",
+        meshInfoCow, program, false, false))
+    {
+        std::cout << "CowXYZ not loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo meshTeapot;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Utah_Teapot.ply",
+        meshTeapot, program, false, true))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo dolphinMeshInfo;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
+        dolphinMeshInfo, program, false, true))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo WarehouseMeshInfo;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_rgba.ply",
+        WarehouseMeshInfo, program, false, true))
+    {
+        std::cout << "Teapot NOT loaded into VAO!" << std::endl;
+    }
+}
+
+void LoadModelsIntoScene()
+{
+    cMeshObject* pCow = new cMeshObject();
+    pCow->bOverrideVertexModelColour = true;
+    pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+    pCow->position.x = -10.f;
+    pCow->orientation.z = 90.0f;
+    pCow->meshFileName = "assets/models/cow.ply";
+
+    cMeshObject* pCow2 = new cMeshObject();
+    pCow2->bIsWireframe = false;
+    //pCow2->bOverrideVertexModelColour = true;
+    //pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+    pCow2->position.x = 10.f;
+    pCow2->scale = 0.5f;
+    pCow2->meshFileName = "assets/models/cow_XYZ.ply";
+
+    ::g_pMeshesToDraw.push_back(pCow);
+    ::g_pMeshesToDraw.push_back(pCow2);
+
+    cMeshObject* pDolphin = new cMeshObject();
+    pDolphin->meshFileName = "assets/models/dolphin.ply";
+    pDolphin->scale = 0.02f;
+    pDolphin->position.y = 10.0f;
+    pDolphin->orientation.z = 45.0f;
+
+    ::g_pMeshesToDraw.push_back(pDolphin);
+
+    cMeshObject* pDolphin2 = new cMeshObject();
+    pDolphin2->meshFileName = "assets/models/dolphin.ply";
+    pDolphin2->scale = 0.02f;
+    pDolphin2->position.y = -10.0f;
+    pDolphin2->orientation.z = -45.0f;
+
+    ::g_pMeshesToDraw.push_back(pDolphin2);
+
+    cMeshObject* pWarehouse = new cMeshObject();
+    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_rgba.ply";
+    pWarehouse->position.y = -20.0f;
+    pWarehouse->orientation.y = 90.0f;
+
+    ::g_pMeshesToDraw.push_back(pWarehouse);
 }

@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "cMeshObject.h"
 
 extern glm::vec3 g_cameraEye;
@@ -69,28 +71,116 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             ::g_pMeshesToDraw[::g_selectedObjectIndex]->position.x -= object_move_speed;
         }
 
+        if (key == GLFW_KEY_Q)
+        {
+            ::g_pMeshesToDraw[::g_selectedObjectIndex]->position.y += object_move_speed;
+        }
+
+        if (key == GLFW_KEY_E)
+        {
+            ::g_pMeshesToDraw[::g_selectedObjectIndex]->position.y -= object_move_speed;
+        }
+
+        if (key == GLFW_KEY_W)
+        {
+            ::g_pMeshesToDraw[::g_selectedObjectIndex]->position.z += object_move_speed;
+        }
+
+        if (key == GLFW_KEY_S)
+        {
+            ::g_pMeshesToDraw[::g_selectedObjectIndex]->position.z -= object_move_speed;
+        }
+
         if (key == GLFW_KEY_P && action == GLFW_RELEASE)
         {
-            if (::g_selectedObjectIndex < ::g_pMeshesToDraw.size() - 1)
+            if (::g_selectedObjectIndex >= ::g_pMeshesToDraw.size())
             {
-                ++::g_selectedObjectIndex;
+                ::g_selectedObjectIndex = 0;  
             }
             else 
             {
-                ::g_selectedObjectIndex = 0;
+                ++::g_selectedObjectIndex;
             }
         }
 
         if (key == GLFW_KEY_O && action == GLFW_RELEASE)
         {
-            if (::g_selectedObjectIndex > 0)
-            {
-                --::g_selectedObjectIndex;
-            }
-            else
+            if (::g_selectedObjectIndex == 0)
             {
                 ::g_selectedObjectIndex = ::g_pMeshesToDraw.size() - 1;
             }
+            else
+            {
+                --::g_selectedObjectIndex;
+            }
+        }
+
+        if (key == GLFW_KEY_ENTER && action == GLFW_RELEASE)
+        {
+            std::ofstream mySaveFile("my_scene.scene");
+
+            mySaveFile << ::g_pMeshesToDraw.size() << std::endl;
+
+            for (int index = 0; index != ::g_pMeshesToDraw.size(); index++)
+            {
+                std::cout << ::g_pMeshesToDraw[index]->meshFileName << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->position.x << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->position.y << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->position.z << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->orientation.x << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->orientation.y << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->orientation.z << std::endl;
+                std::cout << ::g_pMeshesToDraw[index]->scale << std::endl;
+
+
+                mySaveFile << ::g_pMeshesToDraw[index]->meshFileName << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->position.x << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->position.y << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->position.z << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->orientation.x << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->orientation.y << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->orientation.z << std::endl;
+                mySaveFile << ::g_pMeshesToDraw[index]->scale << std::endl;
+            }
+            mySaveFile.close();
+        }
+
+
+        if (key == GLFW_KEY_L && action == GLFW_RELEASE)
+        {
+            std::ifstream mySaveFile("my_scene.scene");
+
+            if (!mySaveFile.is_open())
+            {
+                std::cout << "Did not open scene file!" << std::endl;
+                return;
+            }
+
+            for (auto ptr : ::g_pMeshesToDraw) {
+                delete ptr;
+            }
+            ::g_pMeshesToDraw.clear();
+
+            int meshesInScene = 0;
+            mySaveFile >> meshesInScene;
+
+            for (int index = 0; index != meshesInScene; index++)
+            {
+                cMeshObject* pNewObject = new cMeshObject();
+
+                mySaveFile >> pNewObject->meshFileName;
+                mySaveFile >> pNewObject->position.x;
+                mySaveFile >> pNewObject->position.y;
+                mySaveFile >> pNewObject->position.z;
+                mySaveFile >> pNewObject->orientation.x;
+                mySaveFile >> pNewObject->orientation.y;
+                mySaveFile >> pNewObject->orientation.z;
+                mySaveFile >> pNewObject->scale;
+
+                ::g_pMeshesToDraw.push_back(pNewObject);
+            }
+
+            mySaveFile.close();
         }
     }
 
