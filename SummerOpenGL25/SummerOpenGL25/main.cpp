@@ -164,6 +164,12 @@ int main(void)
                 glUniform1f(useOverrideColor_location, GL_FALSE);
             }
 
+            GLint mModelIt_location = glGetUniformLocation(program, "mModel_InverseTranpose");
+
+            // gets rid of any translation (movement) and scaling. leaves only roation
+            glm::mat4 matModelIt = glm::inverse(glm::transpose(matModel));
+            glUniformMatrix4fv(mModelIt_location, 1, GL_FALSE, glm::value_ptr(matModelIt));
+
             //         mat4x4_identity(m);
             matModel = glm::mat4(1.0f);
 
@@ -279,7 +285,7 @@ void LoadFilesIntoVAOManager(GLuint program)
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin_xyz_n_rgba.ply",
         dolphinMeshInfo, program, true, true))
     {
-        std::cout << "Dolhpin NOT loaded into VAO!" << std::endl;
+        std::cout << "Dolphin NOT loaded into VAO!" << std::endl;
     }
 
     sModelDrawInfo WarehouseMeshInfo;
@@ -312,7 +318,7 @@ void LoadModelsIntoScene()
     ::g_pMeshesToDraw.push_back(pCow2);
 
     cMeshObject* pDolphin = new cMeshObject();
-    pDolphin->meshFileName = "assets/models/dolphin.ply";
+    pDolphin->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
     pDolphin->scale = 0.02f;
     pDolphin->position.y = 10.0f;
     pDolphin->orientation.z = 45.0f;
