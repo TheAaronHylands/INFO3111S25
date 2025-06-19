@@ -18,6 +18,7 @@ public:
 	// 2 = directional light
 	glm::vec4 param2;	// x = 0 for off, 1 for on
 
+
 	GLint position_UL = -1;
 	GLint diffuse_UL = -1;
 	GLint specular_UL = -1;

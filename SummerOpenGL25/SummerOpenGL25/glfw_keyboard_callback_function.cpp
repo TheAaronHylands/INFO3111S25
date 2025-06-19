@@ -5,11 +5,15 @@
 #include <iostream>
 #include <fstream>
 #include "cMeshObject.h"
+#include "cLightManager.h"
 
 extern glm::vec3 g_cameraEye;
 extern std::vector<cMeshObject*> g_pMeshesToDraw;
+extern cLightManager* g_pLights;
 
 unsigned int g_selectedObjectIndex = 0;
+unsigned int g_selectedLightIndex = 0;
+
 
 bool isShiftDown(int mods)
 {
@@ -58,6 +62,59 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
     const float camera_speed = 0.5f;
     const float object_move_speed = 0.7f;
+
+    if ((mods & GLFW_MOD_CONTROL) == GLFW_MOD_CONTROL)
+    {
+        if (key == GLFW_KEY_A)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.x += object_move_speed;
+        }
+
+        if (key == GLFW_KEY_D)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.x -= object_move_speed;
+        }
+
+        if (key == GLFW_KEY_Q)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.y += object_move_speed;
+        }
+
+        if (key == GLFW_KEY_E)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.y -= object_move_speed;
+        }
+
+        if (key == GLFW_KEY_W)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.z += object_move_speed;
+        }
+
+        if (key == GLFW_KEY_S)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].position.z -= object_move_speed;
+        }
+
+        if (key == GLFW_KEY_1)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 0.99;
+        }
+
+        if (key == GLFW_KEY_2)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 1.01;
+        }
+
+        if (key == GLFW_KEY_3)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 0.99;
+        }
+
+        if (key == GLFW_KEY_4)
+        {
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 1.01;
+        }
+    }
 
     if ((mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT)
     {

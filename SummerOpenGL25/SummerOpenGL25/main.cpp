@@ -20,11 +20,19 @@
 
 #include "cShaderManager/cShaderManager.h"
 #include "cVAOManager/cVAOManager.h"
+#include "cLightManager.h"
 #include "cMeshObject.h"
+#include "cLightHelper/cLightHelper.h"
+
 
 
 cShaderManager* g_pTheShaderManager = NULL;
 cVAOManager* g_pMeshManager = NULL;
+cLightManager* g_pLights = NULL;
+
+cMeshObject* g_pSmoothSphere = NULL;
+
+extern unsigned int g_selectedLightIndex;
 
 unsigned int g_NumVerticiesToDraw = 0;
 unsigned int g_SizeOfVertexArrayInBytes = 0;
@@ -34,6 +42,8 @@ void LoadFilesIntoVAOManager(GLuint program);
 
 std::vector<cMeshObject*> g_pMeshesToDraw;
 void LoadModelsIntoScene();
+
+void DrawMesh(cMeshObject* pCurrentMesh, GLint program);
 
 static void error_callback(int error, const char* description)
 {
@@ -105,12 +115,24 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     glCullFace(GL_BACK);
 
+    ::g_pLights = new cLightManager();
+    ::g_pLights->GetUniformLocations(program);
+
+    ::g_pLights->theLights[0].param2.x = 1.0f; // turn on
+    ::g_pLights->theLights[0].param1.x = 0.0f; // light type = point light
+    ::g_pLights->theLights[0].position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[0].diffuse = glm::vec4(1.0f);
+
+    ::g_pLights->theLights[0].atten.x = 0.0f; // constant
+    ::g_pLights->theLights[0].atten.y = 0.01f; // linear
+    ::g_pLights->theLights[0].atten.z = 0.005f; // quadratic
+
     while (!glfwWindowShouldClose(window))
     {
         float ratio;
         int width, height;
         //       mat4x4 m, p, mvp;
-        glm::mat4 matModel, matProj, matView;
+        glm::mat4 matProj, matView;
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float)height;
         glViewport(0, 0, width, height);
@@ -120,7 +142,7 @@ int main(void)
 
         GLint proj_location = glGetUniformLocation(program, "mProj");
         GLint view_location = glGetUniformLocation(program, "mView");
-        GLint Model_location = glGetUniformLocation(program, "mModel");
+
 
         //mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         matProj = glm::perspective(0.6f,
@@ -137,93 +159,86 @@ int main(void)
             cameraTarget,
             upVector);
 
+        GLint eyeLocation_UL = glGetUniformLocation(program, "eyeLocation");
+
+        glUniform3f(eyeLocation_UL,
+            ::g_cameraEye.x, ::g_cameraEye.y, ::g_cameraEye.z);
+
         glUniformMatrix4fv(proj_location, 1, GL_FALSE, glm::value_ptr(matProj));
         glUniformMatrix4fv(view_location, 1, GL_FALSE, glm::value_ptr(matView));
+
+        ::g_pLights->UpdateShaderUniforms(program);
 
         for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++)
         {
             cMeshObject* pCurrentMesh = ::g_pMeshesToDraw[index];
-            if (!pCurrentMesh->bIsVisible)
-            {
-                continue;
-            }
-
-            GLint useOverrideColor_location = glGetUniformLocation(program, "bUseOverrideColor");
-            GLint overrideColor_location = glGetUniformLocation(program, "colorOverride");
-
-            if (pCurrentMesh->bOverrideVertexModelColour)
-            {
-                glUniform3f(overrideColor_location, pCurrentMesh->colourRGB.r,
-                    pCurrentMesh->colourRGB.g, pCurrentMesh->colourRGB.b);
-
-                glUniform1f(useOverrideColor_location, GL_TRUE); // 1.0f
-
-            }
-            else
-            {
-                glUniform1f(useOverrideColor_location, GL_FALSE);
-            }
-
-            GLint mModelIt_location = glGetUniformLocation(program, "mModel_InverseTranpose");
-
-            // gets rid of any translation (movement) and scaling. leaves only roation
-            glm::mat4 matModelIt = glm::inverse(glm::transpose(matModel));
-            glUniformMatrix4fv(mModelIt_location, 1, GL_FALSE, glm::value_ptr(matModelIt));
-
-            //         mat4x4_identity(m);
-            matModel = glm::mat4(1.0f);
-
-            glm::mat4 translation = glm::translate(glm::mat4(1.0f), pCurrentMesh->position);
-
-            //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
-            glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),
-                pCurrentMesh->orientation.x,
-                glm::vec3(1.0f, 0.0f, 0.0f));
-
-            glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),
-                pCurrentMesh->orientation.y,
-                glm::vec3(0.0f, 1.0f, 0.0f));
-
-            glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
-                pCurrentMesh->orientation.z,
-                glm::vec3(0.0f, 0.0f, 1.0f));
-
-            float uniformScale = pCurrentMesh->scale;
-            glm::mat4 scaleXYZ = glm::scale(glm::mat4(1.0f), 
-                glm::vec3(uniformScale, uniformScale, uniformScale));
-
-            matModel = matModel * translation * rotateX * rotateY * rotateZ * scaleXYZ;
-
-            //m = m * rotateZ;
-
-            //mat4x4_mul(mvp, p, m);
-            //mvp = matProj * matView * matModel;
-
-            if (pCurrentMesh->bIsWireframe)
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            }
-            else
-            {
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            }
-            
-
-            //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
-            glUniformMatrix4fv(Model_location, 1, GL_FALSE, glm::value_ptr(matModel));
-
-            //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
-            sModelDrawInfo modelToDraw;
-
-            if (::g_pMeshManager->FindDrawInfoByModelName(pCurrentMesh->meshFileName,
-                modelToDraw))
-            {
-                glBindVertexArray(modelToDraw.VAO_ID);
-                glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
-                    GL_UNSIGNED_INT, (void*)0);
-                glBindVertexArray(0);
-            }
+            DrawMesh(pCurrentMesh, program);
         }
+
+        /*::g_pSmoothSphere = new cMeshObject();
+        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+        ::g_pSmoothSphere->bIsWireframe = true;
+        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+        ::g_pSmoothSphere->colourRGB = glm::vec4(1.0f);
+        ::g_pSmoothSphere->scale = 0.2f;
+
+        ::g_pSmoothSphere->position = glm::vec3(
+            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+
+        DrawMesh(g_pSmoothSphere, program);*/
+        ::g_pSmoothSphere = new cMeshObject();
+        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+        ::g_pSmoothSphere->bIsWireframe = true;
+        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+        ::g_pSmoothSphere->position = glm::vec3(
+            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+
+        cLightHelper lightHelper;
+
+        const float errorValueforLightLevelGuess = 0.01f;
+        const float infiniteDistance = 10000.0f;
+
+        // where the light located
+        ::g_pSmoothSphere->scale = 0.1f;
+        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f);
+        DrawMesh(g_pSmoothSphere, program);
+
+        float distanceAt75Percent = lightHelper.calcApproxDistFromAtten(0.75f,
+            errorValueforLightLevelGuess, infiniteDistance,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+        ::g_pSmoothSphere->scale = distanceAt75Percent;
+        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+        DrawMesh(g_pSmoothSphere, program);
+
+        float distanceAt50Percent = lightHelper.calcApproxDistFromAtten(0.5f,
+            errorValueforLightLevelGuess, infiniteDistance,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+        ::g_pSmoothSphere->scale = distanceAt50Percent;
+        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+        DrawMesh(g_pSmoothSphere, program);
+
+        float distanceAt25Percent = lightHelper.calcApproxDistFromAtten(0.25f,
+            errorValueforLightLevelGuess, infiniteDistance,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+        ::g_pSmoothSphere->scale = distanceAt25Percent;
+        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+        DrawMesh(g_pSmoothSphere, program);
+
+
+
         std::stringstream ssWindowTitle;
 
         ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
@@ -295,6 +310,14 @@ void LoadFilesIntoVAOManager(GLuint program)
     {
         std::cout << "Warehouse NOT loaded into VAO!" << std::endl;
     }
+
+    sModelDrawInfo SmoothSphereMeshInfo;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply",
+        SmoothSphereMeshInfo, program, true, true))
+    {
+        std::cout << "SmoothSphere NOT loaded into VAO!" << std::endl;
+    }
 }
 
 void LoadModelsIntoScene()
@@ -339,4 +362,94 @@ void LoadModelsIntoScene()
     pWarehouse->orientation.y = 90.0f;
 
     ::g_pMeshesToDraw.push_back(pWarehouse);
+}
+
+void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
+{
+    if (!pCurrentMesh->bIsVisible)
+    {
+        return;
+    }
+
+    glm::mat4 matModel;
+    GLint Model_location = glGetUniformLocation(program, "mModel");
+    GLint useOverrideColor_location = glGetUniformLocation(program, "bUseOverrideColor");
+    GLint overrideColor_location = glGetUniformLocation(program, "colorOverride");
+
+    if (pCurrentMesh->bOverrideVertexModelColour)
+    {
+        glUniform3f(overrideColor_location, pCurrentMesh->colourRGB.r,
+            pCurrentMesh->colourRGB.g, pCurrentMesh->colourRGB.b);
+
+        glUniform1f(useOverrideColor_location, GL_TRUE); // 1.0f
+
+    }
+    else
+    {
+        glUniform1f(useOverrideColor_location, GL_FALSE);
+    }
+
+
+
+    //         mat4x4_identity(m);
+    matModel = glm::mat4(1.0f);
+
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), pCurrentMesh->position);
+
+    //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+    glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),
+        pCurrentMesh->orientation.x,
+        glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),
+        pCurrentMesh->orientation.y,
+        glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
+        pCurrentMesh->orientation.z,
+        glm::vec3(0.0f, 0.0f, 1.0f));
+
+    float uniformScale = pCurrentMesh->scale;
+    glm::mat4 scaleXYZ = glm::scale(glm::mat4(1.0f),
+        glm::vec3(uniformScale, uniformScale, uniformScale));
+
+    matModel = matModel * translation * rotateX * rotateY * rotateZ * scaleXYZ;
+
+
+
+    //m = m * rotateZ;
+
+    //mat4x4_mul(mvp, p, m);
+    //mvp = matProj * matView * matModel;
+
+    if (pCurrentMesh->bIsWireframe)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+
+    //glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+    glUniformMatrix4fv(Model_location, 1, GL_FALSE, glm::value_ptr(matModel));
+
+    GLint mModelIt_location = glGetUniformLocation(program, "mModel_InverseTranpose");
+
+    // gets rid of any translation (movement) and scaling. leaves only roation
+    glm::mat4 matModelIt = glm::inverse(glm::transpose(matModel));
+    glUniformMatrix4fv(mModelIt_location, 1, GL_FALSE, glm::value_ptr(matModelIt));
+
+    //glDrawArrays(GL_TRIANGLES, 0, g_NumVerticiesToDraw);
+    sModelDrawInfo modelToDraw;
+
+    if (::g_pMeshManager->FindDrawInfoByModelName(pCurrentMesh->meshFileName,
+        modelToDraw))
+    {
+        glBindVertexArray(modelToDraw.VAO_ID);
+        glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+            GL_UNSIGNED_INT, (void*)0);
+        glBindVertexArray(0);
+    }
 }
