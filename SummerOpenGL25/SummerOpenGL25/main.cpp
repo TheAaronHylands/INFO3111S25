@@ -25,6 +25,11 @@
 #include "cLightHelper/cLightHelper.h"
 
 
+float getRandBetween0and1(void)
+{
+    return ((double)rand() / (RAND_MAX));
+}
+
 
 cShaderManager* g_pTheShaderManager = NULL;
 cVAOManager* g_pMeshManager = NULL;
@@ -155,9 +160,9 @@ int main(void)
         glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 upVector = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        matView = glm::lookAt(g_cameraEye,
-            cameraTarget,
-            upVector);
+        matView = glm::lookAt(g_cameraEye,  
+            cameraTarget,  
+            upVector);     
 
         GLint eyeLocation_UL = glGetUniformLocation(program, "eyeLocation");
 
@@ -237,12 +242,47 @@ int main(void)
         ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
         DrawMesh(g_pSmoothSphere, program);
 
+        // 10% brightness - "dark"
+        float distanceAt10Percent = lightHelper.calcApproxDistFromAtten(0.1f,
+            errorValueforLightLevelGuess, infiniteDistance,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+        ::g_pSmoothSphere->scale = distanceAt10Percent;
+        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 1.0f);
+        DrawMesh(g_pSmoothSphere, program);
 
 
+
+        // Per frame stuff:
+        float aRandom = (getRandBetween0and1() - 0.5f) * 0.01f;
+
+        ::g_pLights->theLights[::g_selectedLightIndex].atten.y += aRandom;
+        ::g_pLights->theLights[::g_selectedLightIndex].position.x += 0.01f;
+
+        
+
+
+
+        // Place stuff on the window title
+ 
         std::stringstream ssWindowTitle;
 
         ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
-            << ::g_cameraEye.y << ", " << ::g_cameraEye.z << std::endl;
+            << ::g_cameraEye.y << ", " << ::g_cameraEye.z
+            << " "
+            << "Light[" << ::g_selectedLightIndex << "]: "
+            << "(xyz): " 
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.x
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.y
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.z
+            << "  atten(Lin,Quad): "
+            << ::g_pLights[::g_selectedLightIndex].theLights->atten.y
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->atten.z;
 
         glfwSetWindowTitle(window, ssWindowTitle.str().c_str());
 
@@ -414,7 +454,6 @@ void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
         glm::vec3(uniformScale, uniformScale, uniformScale));
 
     matModel = matModel * translation * rotateX * rotateY * rotateZ * scaleXYZ;
-
 
 
     //m = m * rotateZ;

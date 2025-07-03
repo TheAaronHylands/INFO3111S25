@@ -97,22 +97,22 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         if (key == GLFW_KEY_1)
         {
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 0.99;
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 0.99; // -1% (99%)
         }
 
         if (key == GLFW_KEY_2)
         {
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 1.01;
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.y *= 1.01; // +1% (101%)
         }
 
         if (key == GLFW_KEY_3)
         {
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 0.99;
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 0.99;    // -0.1%
         }
 
         if (key == GLFW_KEY_4)
         {
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 1.01;
+            ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 1.01;   // +0.1%
         }
     }
 

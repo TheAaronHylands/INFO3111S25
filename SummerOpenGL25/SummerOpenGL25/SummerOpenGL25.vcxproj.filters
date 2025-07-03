@@ -75,4 +75,12 @@
       <Filter>Lights</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\fragment_shader.glsl">
+      <Filter>ShaderManager</Filter>
+    </None>
+    <None Include="assets\shaders\vertex_shader.glsl">
+      <Filter>ShaderManager</Filter>
+    </None>
+  </ItemGroup>
 </Project>
