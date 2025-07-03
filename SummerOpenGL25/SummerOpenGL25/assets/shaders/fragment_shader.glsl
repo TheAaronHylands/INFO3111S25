@@ -2,6 +2,8 @@
 
 uniform vec3 eyeLocation;
 
+uniform vec2 favColour;
+
 in vec4 vertColor;
 in vec4 vertNormal;
 in vec4 vertWorldPosition;

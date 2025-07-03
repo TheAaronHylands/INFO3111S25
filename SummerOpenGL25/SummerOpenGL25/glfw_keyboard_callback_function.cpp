@@ -1,6 +1,7 @@
 #include "GlobalOpenGL.h"
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
+#include "globalStuff.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -10,6 +11,8 @@
 extern glm::vec3 g_cameraEye;
 extern std::vector<cMeshObject*> g_pMeshesToDraw;
 extern cLightManager* g_pLights;
+
+
 
 unsigned int g_selectedObjectIndex = 0;
 unsigned int g_selectedLightIndex = 0;
@@ -114,6 +117,29 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         {
             ::g_pLights->theLights[::g_selectedLightIndex].atten.z *= 1.01;   // +0.1%
         }
+
+        // Select a diffent light
+        if (key == GLFW_KEY_P && action == GLFW_RELEASE)
+        {
+            if (::g_selectedLightIndex >= ::g_pLights->NUMBEROFLIGHTS - 1)
+            {
+                ::g_selectedLightIndex = 0;
+            }
+            else
+            {
+                ++::g_selectedLightIndex;
+            }
+        }
+
+        if (key == GLFW_KEY_0 && action == GLFW_RELEASE)
+        {
+            ::g_ShowLightDebugSpheres = true;
+        }
+        if (key == GLFW_KEY_9 && action == GLFW_RELEASE)
+        {
+            ::g_ShowLightDebugSpheres = false;
+        }
+
     }
 
     if ((mods & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT)

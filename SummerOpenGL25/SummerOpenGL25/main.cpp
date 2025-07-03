@@ -23,11 +23,21 @@
 #include "cLightManager.h"
 #include "cMeshObject.h"
 #include "cLightHelper/cLightHelper.h"
+#include "globalStuff.h"
+
+bool g_ShowLightDebugSpheres = false;
 
 
-float getRandBetween0and1(void)
+double g_getRandBetween0and1(void)
 {
-    return ((double)rand() / (RAND_MAX));
+    return ((double)rand() / ((double)RAND_MAX));
+}
+
+double g_getRandBetween(float min, float max)
+{
+    double zeroToOne = ((double)rand() / (RAND_MAX));
+    double value = (zeroToOne * (max - min)) + min;
+    return value;
 }
 
 
@@ -60,6 +70,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main(void)
 {
+    std::cout << g_getRandBetween(-10.0f, 10.0f) << std::endl;
+    std::cout << g_getRandBetween(-10.0f, 10.0f) << std::endl;
+    std::cout << g_getRandBetween(0.0f, 10.0f) << std::endl;
+
+
     GLFWwindow* window;
 
 
@@ -180,86 +195,91 @@ int main(void)
             DrawMesh(pCurrentMesh, program);
         }
 
-        /*::g_pSmoothSphere = new cMeshObject();
-        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
-        ::g_pSmoothSphere->bIsWireframe = true;
-        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
-        ::g_pSmoothSphere->colourRGB = glm::vec4(1.0f);
-        ::g_pSmoothSphere->scale = 0.2f;
 
-        ::g_pSmoothSphere->position = glm::vec3(
-            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+        if (::g_ShowLightDebugSpheres)
+        {
+            /*::g_pSmoothSphere = new cMeshObject();
+            ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+            ::g_pSmoothSphere->bIsWireframe = true;
+            ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+            ::g_pSmoothSphere->colourRGB = glm::vec4(1.0f);
+            ::g_pSmoothSphere->scale = 0.2f;
 
-        DrawMesh(g_pSmoothSphere, program);*/
-        ::g_pSmoothSphere = new cMeshObject();
-        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
-        ::g_pSmoothSphere->bIsWireframe = true;
-        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
-        ::g_pSmoothSphere->position = glm::vec3(
-            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+            ::g_pSmoothSphere->position = glm::vec3(
+                ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.z);
 
-        cLightHelper lightHelper;
+            DrawMesh(g_pSmoothSphere, program);*/
+            ::g_pSmoothSphere = new cMeshObject();
+            ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+            ::g_pSmoothSphere->bIsWireframe = true;
+            ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+            ::g_pSmoothSphere->position = glm::vec3(
+                ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.z);
 
-        const float errorValueforLightLevelGuess = 0.01f;
-        const float infiniteDistance = 10000.0f;
+            cLightHelper lightHelper;
 
-        // where the light located
-        ::g_pSmoothSphere->scale = 0.1f;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            const float errorValueforLightLevelGuess = 0.01f;
+            const float infiniteDistance = 10000.0f;
 
-        float distanceAt75Percent = lightHelper.calcApproxDistFromAtten(0.75f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            // where the light located
+            ::g_pSmoothSphere->scale = 0.1f;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt75Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt75Percent = lightHelper.calcApproxDistFromAtten(0.75f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
 
-        float distanceAt50Percent = lightHelper.calcApproxDistFromAtten(0.5f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            ::g_pSmoothSphere->scale = distanceAt75Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt50Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt50Percent = lightHelper.calcApproxDistFromAtten(0.5f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
 
-        float distanceAt25Percent = lightHelper.calcApproxDistFromAtten(0.25f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            ::g_pSmoothSphere->scale = distanceAt50Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt25Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt25Percent = lightHelper.calcApproxDistFromAtten(0.25f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
 
-        // 10% brightness - "dark"
-        float distanceAt10Percent = lightHelper.calcApproxDistFromAtten(0.1f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            ::g_pSmoothSphere->scale = distanceAt25Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt10Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 1.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            // 10% brightness - "dark"
+            float distanceAt10Percent = lightHelper.calcApproxDistFromAtten(0.1f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+            ::g_pSmoothSphere->scale = distanceAt10Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 1.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
 
+        }//if (::g_ShowLightDebugSpheres)
 
         // Per frame stuff:
-        float aRandom = (getRandBetween0and1() - 0.5f) * 0.01f;
 
-        ::g_pLights->theLights[::g_selectedLightIndex].atten.y += aRandom;
-        ::g_pLights->theLights[::g_selectedLightIndex].position.x += 0.01f;
+        // "flicker" the lights a little bit
+//        double aRandom = (::g_getRandBetween0and1() - 0.5) * 0.01;
+//       ::g_pLights->theLights[::g_selectedLightIndex].atten.y += (float)aRandom;
+//        ::g_pLights->theLights[::g_selectedLightIndex].position.x += 0.01f;
 
         
 

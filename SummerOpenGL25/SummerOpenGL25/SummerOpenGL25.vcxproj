@@ -151,6 +151,7 @@
     <ClInclude Include="cShaderManager\cShaderManager.h" />
     <ClInclude Include="cVAOManager\cVAOManager.h" />
     <ClInclude Include="GlobalOpenGL.h" />
+    <ClInclude Include="globalStuff.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\fragment_shader.glsl" />

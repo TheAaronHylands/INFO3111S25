@@ -74,6 +74,9 @@
     <ClInclude Include="cLightManager.h">
       <Filter>Lights</Filter>
     </ClInclude>
+    <ClInclude Include="globalStuff.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\fragment_shader.glsl">
