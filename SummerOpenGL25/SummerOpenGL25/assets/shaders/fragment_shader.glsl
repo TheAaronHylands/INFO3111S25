@@ -2,7 +2,7 @@
 
 uniform vec3 eyeLocation;
 
-uniform vec2 favColour;
+uniform vec2 favColour;	// Hey
 
 in vec4 vertColor;
 in vec4 vertNormal;
