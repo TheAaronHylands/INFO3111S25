@@ -1,3 +1,4 @@
+
 //#include <glad/glad.h>
 //#include <GLFW/glfw3.h>
 #include "GlobalOpenGL.h"
@@ -23,7 +24,20 @@
 #include "cLightManager.h"
 #include "cMeshObject.h"
 #include "cLightHelper/cLightHelper.h"
+#include "globalStuff.h"
 
+bool g_ShowLightDebugSpheres = false;
+
+
+double g_getRandBetween0and1(void) {
+    return ((double)rand() / ((double)RAND_MAX));
+}
+
+double g_getRandBetween(float min, float max) {
+    double zeroToOne = ((double)rand() / (RAND_MAX));
+    double value = (zeroToOne * (max - min)) + min;
+    return value;
+}
 
 
 cShaderManager* g_pTheShaderManager = NULL;
@@ -45,16 +59,19 @@ void LoadModelsIntoScene();
 
 void DrawMesh(cMeshObject* pCurrentMesh, GLint program);
 
-static void error_callback(int error, const char* description)
-{
+static void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 
-int main(void)
-{
+int main(void) {
+    std::cout << g_getRandBetween(-10.0f, 10.0f) << std::endl;
+    std::cout << g_getRandBetween(-10.0f, 10.0f) << std::endl;
+    std::cout << g_getRandBetween(0.0f, 10.0f) << std::endl;
+
+
     GLFWwindow* window;
 
 
@@ -62,8 +79,7 @@ int main(void)
     GLint mvp_location;
 
     glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-    {
+    if (!glfwInit()) {
         exit(EXIT_FAILURE);
     }
 
@@ -71,8 +87,7 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
     window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-    if (!window)
-    {
+    if (!window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
@@ -82,7 +97,7 @@ int main(void)
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
-    
+
 
     ::g_pTheShaderManager = new cShaderManager();
 
@@ -95,12 +110,9 @@ int main(void)
     frag_shader.fileName = "fragment_shader.glsl";
 
 
-    if (::g_pTheShaderManager->createProgramFromFile("shader1", vert_shader, frag_shader))
-    {
+    if (::g_pTheShaderManager->createProgramFromFile("shader1", vert_shader, frag_shader)) {
         std::cout << "Shaders succesfully created!" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << ::g_pTheShaderManager->getLastError() << std::endl;
     }
 
@@ -127,8 +139,7 @@ int main(void)
     ::g_pLights->theLights[0].atten.y = 0.01f; // linear
     ::g_pLights->theLights[0].atten.z = 0.005f; // quadratic
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
         float ratio;
         int width, height;
         //       mat4x4 m, p, mvp;
@@ -169,109 +180,147 @@ int main(void)
 
         ::g_pLights->UpdateShaderUniforms(program);
 
-        for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++)
-        {
+        for (unsigned int index = 0; index != ::g_pMeshesToDraw.size(); index++) {
             cMeshObject* pCurrentMesh = ::g_pMeshesToDraw[index];
             DrawMesh(pCurrentMesh, program);
         }
 
-        /*::g_pSmoothSphere = new cMeshObject();
-        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
-        ::g_pSmoothSphere->bIsWireframe = true;
-        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
-        ::g_pSmoothSphere->colourRGB = glm::vec4(1.0f);
-        ::g_pSmoothSphere->scale = 0.2f;
 
-        ::g_pSmoothSphere->position = glm::vec3(
-            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+        if (::g_ShowLightDebugSpheres) {
+            /*::g_pSmoothSphere = new cMeshObject();
+            ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+            ::g_pSmoothSphere->bIsWireframe = true;
+            ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+            ::g_pSmoothSphere->colourRGB = glm::vec4(1.0f);
+            ::g_pSmoothSphere->scale = 0.2f;
 
-        DrawMesh(g_pSmoothSphere, program);*/
-        ::g_pSmoothSphere = new cMeshObject();
-        ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
-        ::g_pSmoothSphere->bIsWireframe = true;
-        ::g_pSmoothSphere->bOverrideVertexModelColour = true;
-        ::g_pSmoothSphere->position = glm::vec3(
-            ::g_pLights->theLights[::g_selectedLightIndex].position.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].position.z);
+            ::g_pSmoothSphere->position = glm::vec3(
+                ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.z);
 
-        cLightHelper lightHelper;
+            DrawMesh(g_pSmoothSphere, program);*/
+            ::g_pSmoothSphere = new cMeshObject();
+            ::g_pSmoothSphere->meshFileName = "assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply";
+            ::g_pSmoothSphere->bIsWireframe = true;
+            ::g_pSmoothSphere->bOverrideVertexModelColour = true;
+            ::g_pSmoothSphere->position = glm::vec3(
+                ::g_pLights->theLights[::g_selectedLightIndex].position.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].position.z);
 
-        const float errorValueforLightLevelGuess = 0.01f;
-        const float infiniteDistance = 10000.0f;
+            cLightHelper lightHelper;
 
-        // where the light located
-        ::g_pSmoothSphere->scale = 0.1f;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            const float errorValueforLightLevelGuess = 0.01f;
+            const float infiniteDistance = 10000.0f;
 
-        float distanceAt75Percent = lightHelper.calcApproxDistFromAtten(0.75f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            // where the light located
+            ::g_pSmoothSphere->scale = 0.1f;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt75Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt75Percent = lightHelper.calcApproxDistFromAtten(0.75f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
 
-        float distanceAt50Percent = lightHelper.calcApproxDistFromAtten(0.5f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            ::g_pSmoothSphere->scale = distanceAt75Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt50Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt50Percent = lightHelper.calcApproxDistFromAtten(0.5f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
 
-        float distanceAt25Percent = lightHelper.calcApproxDistFromAtten(0.25f,
-            errorValueforLightLevelGuess, infiniteDistance,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
-            ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+            ::g_pSmoothSphere->scale = distanceAt50Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
-        ::g_pSmoothSphere->scale = distanceAt25Percent;
-        ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
-        DrawMesh(g_pSmoothSphere, program);
+            float distanceAt25Percent = lightHelper.calcApproxDistFromAtten(0.25f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+            ::g_pSmoothSphere->scale = distanceAt25Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 0.0f, 1.0f);
+            DrawMesh(g_pSmoothSphere, program);
+
+            // 10% brightness - "dark"
+            float distanceAt10Percent = lightHelper.calcApproxDistFromAtten(0.1f,
+                errorValueforLightLevelGuess, infiniteDistance,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.x,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.y,
+                ::g_pLights->theLights[::g_selectedLightIndex].atten.z);
+
+            ::g_pSmoothSphere->scale = distanceAt10Percent;
+            ::g_pSmoothSphere->colourRGB = glm::vec3(0.0f, 1.0f, 1.0f);
+            DrawMesh(g_pSmoothSphere, program);
 
 
+        }//if (::g_ShowLightDebugSpheres)
+
+        // Per frame stuff:
+
+        // "flicker" the lights a little bit
+//        double aRandom = (::g_getRandBetween0and1() - 0.5) * 0.01;
+//       ::g_pLights->theLights[::g_selectedLightIndex].atten.y += (float)aRandom;
+//        ::g_pLights->theLights[::g_selectedLightIndex].position.x += 0.01f;
+
+
+
+
+
+        // Place stuff on the window title
 
         std::stringstream ssWindowTitle;
 
         ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
-            << ::g_cameraEye.y << ", " << ::g_cameraEye.z << std::endl;
+            << ::g_cameraEye.y << ", " << ::g_cameraEye.z
+            << " "
+            << "Light[" << ::g_selectedLightIndex << "]: "
+            << "(xyz): "
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.x
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.y
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->position.z
+            << "  atten(Lin,Quad): "
+            << ::g_pLights[::g_selectedLightIndex].theLights->atten.y
+            << ", "
+            << ::g_pLights[::g_selectedLightIndex].theLights->atten.z;
 
         glfwSetWindowTitle(window, ssWindowTitle.str().c_str());
 
-       /* if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/cow.ply",
-            modelToDraw))
-        {
-            glBindVertexArray(modelToDraw.VAO_ID);
-            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices, 
-                GL_UNSIGNED_INT, (void*)0);
-            glBindVertexArray(0);
-        }
+        /* if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/cow.ply",
+             modelToDraw))
+         {
+             glBindVertexArray(modelToDraw.VAO_ID);
+             glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+                 GL_UNSIGNED_INT, (void*)0);
+             glBindVertexArray(0);
+         }
 
-        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/Utah_Teapot.ply",
-            modelToDraw))
-        {
-            glBindVertexArray(modelToDraw.VAO_ID);
-            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
-                GL_UNSIGNED_INT, (void*)0);
-            glBindVertexArray(0);
-        }
+         if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/Utah_Teapot.ply",
+             modelToDraw))
+         {
+             glBindVertexArray(modelToDraw.VAO_ID);
+             glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+                 GL_UNSIGNED_INT, (void*)0);
+             glBindVertexArray(0);
+         }
 
-        if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/dolphin.ply",
-            modelToDraw))
-        {
-            glBindVertexArray(modelToDraw.VAO_ID);
-            glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
-                GL_UNSIGNED_INT, (void*)0);
-            glBindVertexArray(0);
-        }*/
+         if (::g_pMeshManager->FindDrawInfoByModelName("assets/models/dolphin.ply",
+             modelToDraw))
+         {
+             glBindVertexArray(modelToDraw.VAO_ID);
+             glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
+                 GL_UNSIGNED_INT, (void*)0);
+             glBindVertexArray(0);
+         }*/
 
 
 
@@ -283,25 +332,22 @@ int main(void)
     exit(EXIT_SUCCESS);
 }
 
-void LoadFilesIntoVAOManager(GLuint program)
-{
+void LoadFilesIntoVAOManager(GLuint program) {
     ::g_pMeshManager = new cVAOManager();
-    
+
 
 
     sModelDrawInfo dolphinMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin_xyz_n_rgba.ply",
-        dolphinMeshInfo, program, true, true))
-    {
+        dolphinMeshInfo, program, true, true)) {
         std::cout << "Dolphin NOT loaded into VAO!" << std::endl;
     }
 
     sModelDrawInfo ArenaMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Arena.ply",
-        ArenaMeshInfo, program, true, true))
-    {
+        ArenaMeshInfo, program, true, true)) {
         std::cout << "Arena NOT loaded into VAO!" << std::endl;
     }
 
@@ -322,17 +368,15 @@ void LoadFilesIntoVAOManager(GLuint program)
     sModelDrawInfo SmoothSphereMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply",
-        SmoothSphereMeshInfo, program, true, true))
-    {
+        SmoothSphereMeshInfo, program, true, true)) {
         std::cout << "SmoothSphere NOT loaded into VAO!" << std::endl;
     }
 }
 
-void LoadModelsIntoScene()
-{
-    
+void LoadModelsIntoScene() {
 
-    
+
+
 
     cMeshObject* pDolphin = new cMeshObject();
     pDolphin->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
@@ -376,10 +420,8 @@ void LoadModelsIntoScene()
     ::g_pMeshesToDraw.push_back(pCow);
 }
 
-void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
-{
-    if (!pCurrentMesh->bIsVisible)
-    {
+void DrawMesh(cMeshObject* pCurrentMesh, GLint program) {
+    if (!pCurrentMesh->bIsVisible) {
         return;
     }
 
@@ -388,16 +430,13 @@ void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
     GLint useOverrideColor_location = glGetUniformLocation(program, "bUseOverrideColor");
     GLint overrideColor_location = glGetUniformLocation(program, "colorOverride");
 
-    if (pCurrentMesh->bOverrideVertexModelColour)
-    {
+    if (pCurrentMesh->bOverrideVertexModelColour) {
         glUniform3f(overrideColor_location, pCurrentMesh->colourRGB.r,
             pCurrentMesh->colourRGB.g, pCurrentMesh->colourRGB.b);
 
         glUniform1f(useOverrideColor_location, GL_TRUE); // 1.0f
 
-    }
-    else
-    {
+    } else {
         glUniform1f(useOverrideColor_location, GL_FALSE);
     }
 
@@ -428,18 +467,14 @@ void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
     matModel = matModel * translation * rotateX * rotateY * rotateZ * scaleXYZ;
 
 
-
     //m = m * rotateZ;
 
     //mat4x4_mul(mvp, p, m);
     //mvp = matProj * matView * matModel;
 
-    if (pCurrentMesh->bIsWireframe)
-    {
+    if (pCurrentMesh->bIsWireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-    else
-    {
+    } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
@@ -457,8 +492,7 @@ void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
     sModelDrawInfo modelToDraw;
 
     if (::g_pMeshManager->FindDrawInfoByModelName(pCurrentMesh->meshFileName,
-        modelToDraw))
-    {
+        modelToDraw)) {
         glBindVertexArray(modelToDraw.VAO_ID);
         glDrawElements(GL_TRIANGLES, modelToDraw.numberOfIndices,
             GL_UNSIGNED_INT, (void*)0);
