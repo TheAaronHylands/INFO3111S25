@@ -286,13 +286,7 @@ int main(void)
 void LoadFilesIntoVAOManager(GLuint program)
 {
     ::g_pMeshManager = new cVAOManager();
-    sModelDrawInfo meshInfoCow;
-
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_xyz_n_rgba.ply",
-        meshInfoCow, program, true, true))
-    {
-        std::cout << "Cow not loaded into VAO!" << std::endl;
-    }
+    
 
 
     sModelDrawInfo dolphinMeshInfo;
@@ -303,12 +297,26 @@ void LoadFilesIntoVAOManager(GLuint program)
         std::cout << "Dolphin NOT loaded into VAO!" << std::endl;
     }
 
-    sModelDrawInfo WarehouseMeshInfo;
+    sModelDrawInfo ArenaMeshInfo;
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_n_rgba.ply",
-        WarehouseMeshInfo, program, true, true))
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Arena.ply",
+        ArenaMeshInfo, program, true, true))
     {
-        std::cout << "Warehouse NOT loaded into VAO!" << std::endl;
+        std::cout << "Arena NOT loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo meshInfoHomer;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/homer.ply",
+        meshInfoHomer, program, true, true)) {
+        std::cout << "Homer not loaded into VAO!" << std::endl;
+    }
+
+    sModelDrawInfo meshInfoCow;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow.ply",
+        meshInfoHomer, program, true, true)) {
+        std::cout << "Cow not loaded into VAO!" << std::endl;
     }
 
     sModelDrawInfo SmoothSphereMeshInfo;
@@ -322,23 +330,9 @@ void LoadFilesIntoVAOManager(GLuint program)
 
 void LoadModelsIntoScene()
 {
-    cMeshObject* pCow = new cMeshObject();
-    pCow->bOverrideVertexModelColour = true;
-    pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
-    pCow->position.x = -10.f;
-    pCow->orientation.z = 90.0f;
-    pCow->meshFileName = "assets/models/cow_xyz_n_rgba.ply";
+    
 
-    cMeshObject* pCow2 = new cMeshObject();
-    pCow2->bIsWireframe = false;
-    //pCow2->bOverrideVertexModelColour = true;
-    //pCow2->colourRGB = glm::vec3(1.0f, 0.0f, 0.0f);
-    pCow2->position.x = 10.f;
-    pCow2->scale = 0.5f;
-    pCow2->meshFileName = "assets/models/cow_xyz_n_rgba.ply";
-
-    ::g_pMeshesToDraw.push_back(pCow);
-    ::g_pMeshesToDraw.push_back(pCow2);
+    
 
     cMeshObject* pDolphin = new cMeshObject();
     pDolphin->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
@@ -356,12 +350,30 @@ void LoadModelsIntoScene()
 
     ::g_pMeshesToDraw.push_back(pDolphin2);
 
-    cMeshObject* pWarehouse = new cMeshObject();
-    pWarehouse->meshFileName = "assets/models/Warehouse_xyz_n_rgba.ply";
-    pWarehouse->position.y = -20.0f;
-    pWarehouse->orientation.y = 90.0f;
+    cMeshObject* pArena = new cMeshObject();
+    pArena->meshFileName = "assets/models/Arena.ply";
+    pArena->scale = 3.0f;
+    pArena->position.y = -4.0f;
 
-    ::g_pMeshesToDraw.push_back(pWarehouse);
+    ::g_pMeshesToDraw.push_back(pArena);
+
+    cMeshObject* pHomer = new cMeshObject();
+    pHomer->position.x = 8.79f;
+    pHomer->position.y = 1.5f;
+    pHomer->position.z = 2.76f;
+    pHomer->orientation.y = 20.0f;
+    pHomer->meshFileName = "assets/models/homer.ply";
+
+    ::g_pMeshesToDraw.push_back(pHomer);
+
+    cMeshObject* pCow = new cMeshObject();
+    pCow->position.x = 8.79f;
+    pCow->position.y = 1.5f;
+    pCow->position.z = 2.76f;
+    pCow->orientation.y = 20.0f;
+    pCow->meshFileName = "assets/models/cow.ply";
+
+    ::g_pMeshesToDraw.push_back(pCow);
 }
 
 void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
