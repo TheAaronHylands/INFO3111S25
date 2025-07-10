@@ -132,12 +132,32 @@ int main(void) {
 
     ::g_pLights->theLights[0].param2.x = 1.0f; // turn on
     ::g_pLights->theLights[0].param1.x = 0.0f; // light type = point light
-    ::g_pLights->theLights[0].position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[0].position = glm::vec4(5.0f, 10.0f, 0.0f, 1.0f);
     ::g_pLights->theLights[0].diffuse = glm::vec4(1.0f);
 
     ::g_pLights->theLights[0].atten.x = 0.0f; // constant
     ::g_pLights->theLights[0].atten.y = 0.01f; // linear
     ::g_pLights->theLights[0].atten.z = 0.005f; // quadratic
+
+    ::g_pLights->theLights[1].param2.x = 1.0f; // turn on
+    ::g_pLights->theLights[1].param1.x = 0.0f; // light type = point light
+    ::g_pLights->theLights[1].position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[1].diffuse = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[1].specular = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+    ::g_pLights->theLights[1].atten.x = 0.0f; // constant
+    ::g_pLights->theLights[1].atten.y = 0.01f; // linear
+    ::g_pLights->theLights[1].atten.z = 0.005f; // quadratic
+
+    ::g_pLights->theLights[2].param2.x = 1.0f; // turn on
+    ::g_pLights->theLights[2].param1.x = 0.0f; // light type = point light
+    ::g_pLights->theLights[2].position = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[2].diffuse = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    ::g_pLights->theLights[2].specular = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+    ::g_pLights->theLights[2].atten.x = 0.0f; // constant
+    ::g_pLights->theLights[2].atten.y = 0.01f; // linear
+    ::g_pLights->theLights[2].atten.z = 0.005f; // quadratic
 
     while (!glfwWindowShouldClose(window)) {
         float ratio;
@@ -278,7 +298,7 @@ int main(void) {
 
         std::stringstream ssWindowTitle;
 
-        ssWindowTitle << "Camera (XYZ)" << ::g_cameraEye.x << ","
+        ssWindowTitle << "Aaron Hylands - 0740727 - Camera (XYZ)" << ::g_cameraEye.x << ","
             << ::g_cameraEye.y << ", " << ::g_cameraEye.z
             << " "
             << "Light[" << ::g_selectedLightIndex << "]: "
@@ -339,7 +359,7 @@ void LoadFilesIntoVAOManager(GLuint program) {
 
     sModelDrawInfo dolphinMeshInfo;
 
-    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin_xyz_n_rgba.ply",
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin.ply",
         dolphinMeshInfo, program, true, true)) {
         std::cout << "Dolphin NOT loaded into VAO!" << std::endl;
     }
@@ -379,20 +399,13 @@ void LoadModelsIntoScene() {
 
 
     cMeshObject* pDolphin = new cMeshObject();
-    pDolphin->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
-    pDolphin->scale = 0.02f;
-    pDolphin->position.y = 10.0f;
-    pDolphin->orientation.z = 45.0f;
+    pDolphin->meshFileName = "assets/models/dolphin.ply";
+    pDolphin->position.x = -8.0f;
+    pDolphin->position.y = 3.0f;
+    pDolphin->position.z = -3.0f;
+    pDolphin->orientation.y = -46.0f;
 
     ::g_pMeshesToDraw.push_back(pDolphin);
-
-    cMeshObject* pDolphin2 = new cMeshObject();
-    pDolphin2->meshFileName = "assets/models/dolphin_xyz_n_rgba.ply";
-    pDolphin2->scale = 0.02f;
-    pDolphin2->position.y = -10.0f;
-    pDolphin2->orientation.z = -45.0f;
-
-    ::g_pMeshesToDraw.push_back(pDolphin2);
 
     cMeshObject* pArena = new cMeshObject();
     pArena->meshFileName = "assets/models/Arena.ply";
@@ -403,7 +416,7 @@ void LoadModelsIntoScene() {
 
     cMeshObject* pHomer = new cMeshObject();
     pHomer->position.x = 8.79f;
-    pHomer->position.y = 1.5f;
+    pHomer->position.y = 6.5f;
     pHomer->position.z = 2.76f;
     pHomer->orientation.y = 20.0f;
     pHomer->meshFileName = "assets/models/homer.ply";

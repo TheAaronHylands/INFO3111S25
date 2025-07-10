@@ -151,6 +151,7 @@
     <ClInclude Include="cShaderManager\cShaderManager.h" />
     <ClInclude Include="cVAOManager\cVAOManager.h" />
     <ClInclude Include="GlobalOpenGL.h" />
+    <ClInclude Include="globalStuff.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
