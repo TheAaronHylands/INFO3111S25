@@ -45,7 +45,9 @@ bool cVAOManager::LoadModelIntoVAO(
 		sModelDrawInfo &drawInfo,
 	    unsigned int shaderProgramID,
 		bool hasNormals,
-		bool hasColours)
+		bool hasColours,
+		bool hasTextureCoords,
+	    float scaling)	// Set scaling to 1.0 for no change
 
 {
 	// Load the model from file
@@ -54,7 +56,9 @@ bool cVAOManager::LoadModelIntoVAO(
 
 	drawInfo.meshName = fileName;
 
-	if ( ! this->m_LoadTheModel( fileName, drawInfo, hasNormals, hasColours))
+	if ( ! this->m_LoadTheModel( fileName, drawInfo, 
+		                         hasNormals, hasColours,
+		                         hasTextureCoords, scaling))
 	{
 		this->m_AppendTextToLastError( "Didn't load model", true );
 		return false;
@@ -174,7 +178,9 @@ bool cVAOManager::FindDrawInfoByModelName(
 bool cVAOManager::m_LoadTheModel(std::string fileName,
 								 sModelDrawInfo &drawInfo,
 								 bool hasNormals,
-								 bool hasColours )
+								 bool hasColours,
+	                             bool hasTextures, 
+	                             float scaling)
 {
 	// Open the file. 
 	// Read until we hit the word "vertex"
@@ -235,19 +241,25 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 
 	sVertPly tempVert;
 	// Load the vertices...
-	for ( unsigned int index = 0; index != drawInfo.numberOfVertices; // ::g_NumberOfVertices; 
-		  index++ )
+	for (unsigned int index = 0; index != drawInfo.numberOfVertices; // ::g_NumberOfVertices; 
+		index++)
 	{
-		thePlyFile >> tempVert.pos.x >> tempVert.pos.y >> tempVert.pos.z;
-		
+		thePlyFile
+			>> tempVert.pos.x
+			>> tempVert.pos.y
+			>> tempVert.pos.z;
 
-//		tempVert.pos.x *= 10.0f;
-//		tempVert.pos.y *= 10.0f;
-//		tempVert.pos.z *= 10.0f;
+
+		//		tempVert.pos.x *= 10.0f;
+		//		tempVert.pos.y *= 10.0f;
+		//		tempVert.pos.z *= 10.0f;
 
 		if (hasNormals)
 		{
-			thePlyFile >> tempVert.norm.x >> tempVert.norm.y >> tempVert.norm.z;
+			thePlyFile
+				>> tempVert.norm.x
+				>> tempVert.norm.y
+				>> tempVert.norm.z;
 		}
 
 		if (hasColours)
@@ -261,11 +273,25 @@ bool cVAOManager::m_LoadTheModel(std::string fileName,
 			tempVert.colour.z /= 255.0f;
 			tempVert.colour.a /= 255.0f;
 		}
-	
+
+		//if (hasTextueCoords)
+		//{
+
+		//}
 
 		// Add too... what? 
 		vecTempPlyVerts.push_back(tempVert);
 	}
+
+	// Apply scaling
+	for (sVertPly &curVertex : vecTempPlyVerts)
+	{
+		curVertex.pos.x *= scaling;
+		curVertex.pos.y *= scaling;
+		curVertex.pos.z *= scaling;
+	}
+
+
 
 	// Create a local vertex array
 	// Note: The format the file (ply) is DIFFERENT from this array:

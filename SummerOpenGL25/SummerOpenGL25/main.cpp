@@ -346,10 +346,25 @@ int main(void)
 void LoadFilesIntoVAOManager(GLuint program)
 {
     ::g_pMeshManager = new cVAOManager();
+
+    // Load the dungeon floow model
+    sModelDrawInfo meshFloor03;
+
+    // Scale we want for the floor. 
+    // They are 500 units wide.
+    float newFloorScale = 10.0f/ 500.0f;
+
+    if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Dungeon_models/Floors/SM_Env_Dwarf_Floor_03_xyz_n.ply",
+        meshFloor03, program, true, false, false, newFloorScale))
+    {
+        std::cout << "Floor didn't load not loaded into VAO!" << std::endl;
+    }
+
+
     sModelDrawInfo meshInfoCow;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/cow_xyz_n_rgba.ply",
-        meshInfoCow, program, true, true))
+        meshInfoCow, program, true, true, false, 1.0f))
     {
         std::cout << "Cow not loaded into VAO!" << std::endl;
     }
@@ -358,7 +373,7 @@ void LoadFilesIntoVAOManager(GLuint program)
     sModelDrawInfo dolphinMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/dolphin_xyz_n_rgba.ply",
-        dolphinMeshInfo, program, true, true))
+        dolphinMeshInfo, program, true, true, false, 1.0f))
     {
         std::cout << "Dolphin NOT loaded into VAO!" << std::endl;
     }
@@ -366,7 +381,7 @@ void LoadFilesIntoVAOManager(GLuint program)
     sModelDrawInfo WarehouseMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Warehouse_xyz_n_rgba.ply",
-        WarehouseMeshInfo, program, true, true))
+        WarehouseMeshInfo, program, true, true, false, 1.0f))
     {
         std::cout << "Warehouse NOT loaded into VAO!" << std::endl;
     }
@@ -374,7 +389,7 @@ void LoadFilesIntoVAOManager(GLuint program)
     sModelDrawInfo SmoothSphereMeshInfo;
 
     if (!::g_pMeshManager->LoadModelIntoVAO("assets/models/Isoshphere_smooth_inverted_normals_xyz_n_rgba.ply",
-        SmoothSphereMeshInfo, program, true, true))
+        SmoothSphereMeshInfo, program, true, true, false, 1.0f))
     {
         std::cout << "SmoothSphere NOT loaded into VAO!" << std::endl;
     }
@@ -382,6 +397,63 @@ void LoadFilesIntoVAOManager(GLuint program)
 
 void LoadModelsIntoScene()
 {
+    cMeshObject* pFloor = new cMeshObject();
+    pFloor->bOverrideVertexModelColour = true;
+    pFloor->colourRGB = glm::vec3(0.7f, 0.7f, 0.7f);
+    //pFloor->position.x = -10.f;
+    //pFloor->orientation.z = 90.0f;
+    pFloor->meshFileName = "assets/models/Dungeon_models/Floors/SM_Env_Dwarf_Floor_03_xyz_n.ply";
+    ::g_pMeshesToDraw.push_back(pFloor);
+
+
+    // HACK: Load the dungeon map
+//    XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//    X...X.........X.......X.....X
+//    X.XXX.X.....XXX.X.XXX.X.XXX.X
+//    X...........X...X...X.X.X...X
+//    X...........X.XXXXX.X.XXX.X.X
+//    X.......X...X...X...X.X...X.X
+//    X.......X.XXXXX.X.XXX.X.X.XXX
+//    X.........X.....X.X.....X.X..
+//    X.XX....XXX.XXXXX.XXXXXXX.X.X
+//    ........X...X.X...X...X...X.X
+//    X.......X.XXX.X.XXX.X.XXXXX.X
+//    X.........X...X.....X.X.....X
+//    X.......XXX.X.XXXXXXX.X.XXXXX
+//    X...........X.......X.......X
+//    XXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    std::vector<std::string> vecTheMap;
+    std::ifstream theDungeonMapFile("assets/DungeonMap.txt");
+    if (theDungeonMapFile.is_open())
+    {
+        // Openned the map
+        std::string theRow;
+        while (theDungeonMapFile >> theRow)
+        {
+            vecTheMap.push_back(theRow);
+        }
+    }
+
+    // Cell 3, 4
+    char theCell = vecTheMap[3][4];
+    
+    const float floorTileWidth = 10.0f;
+
+    for (unsigned int row = 0; row != vecTheMap.size(); row++)
+    {
+        for (unsigned int col = 0; col != vecTheMap[0].length(); col++)
+        {
+            cMeshObject* pFloor = new cMeshObject();
+            pFloor->bOverrideVertexModelColour = true;
+            pFloor->colourRGB = glm::vec3(0.7f, 0.7f, 0.7f);
+            pFloor->position.x = row * floorTileWidth;
+            pFloor->position.z = col * floorTileWidth;
+            pFloor->position.y = -10.0f;
+            pFloor->meshFileName = "assets/models/Dungeon_models/Floors/SM_Env_Dwarf_Floor_03_xyz_n.ply";
+            ::g_pMeshesToDraw.push_back(pFloor);
+        }
+    }
+
     cMeshObject* pCow = new cMeshObject();
     pCow->bOverrideVertexModelColour = true;
     pCow->colourRGB = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -421,7 +493,7 @@ void LoadModelsIntoScene()
     pWarehouse->position.y = -20.0f;
     pWarehouse->orientation.y = 90.0f;
 
-    ::g_pMeshesToDraw.push_back(pWarehouse);
+//    ::g_pMeshesToDraw.push_back(pWarehouse);
 }
 
 void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
@@ -458,15 +530,15 @@ void DrawMesh(cMeshObject* pCurrentMesh, GLint program)
 
     //mat4x4_rotate_Z(m, m, (float) glfwGetTime());
     glm::mat4 rotateX = glm::rotate(glm::mat4(1.0f),
-        pCurrentMesh->orientation.x,
+        glm::radians(pCurrentMesh->orientation.x),
         glm::vec3(1.0f, 0.0f, 0.0f));
 
     glm::mat4 rotateY = glm::rotate(glm::mat4(1.0f),
-        pCurrentMesh->orientation.y,
+        glm::radians(pCurrentMesh->orientation.y),
         glm::vec3(0.0f, 1.0f, 0.0f));
 
     glm::mat4 rotateZ = glm::rotate(glm::mat4(1.0f),
-        pCurrentMesh->orientation.z,
+        glm::radians(pCurrentMesh->orientation.z),
         glm::vec3(0.0f, 0.0f, 1.0f));
 
     float uniformScale = pCurrentMesh->scale;

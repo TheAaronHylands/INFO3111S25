@@ -56,7 +56,9 @@ public:
 		sModelDrawInfo& drawInfo,
 		unsigned int shaderProgramID,
 		bool hasNormals,
-		bool hasColours);
+		bool hasColours,
+		bool hasTextureCoords,				// TODO:
+		float scaling);			// Keep at 1.0 for no change
 
 	// We don't want to return an int, likely
 	bool FindDrawInfoByModelName(std::string filename,
@@ -74,7 +76,9 @@ private:
 	bool m_LoadTheModel( std::string fileName, 
 						 sModelDrawInfo &drawInfo,
 						 bool hasNormals,
-						 bool hasColours);
+						 bool hasColours,
+						 bool hasTextureCoords,
+						 float scaling);
 
 	std::string m_lastErrorString;
 	void m_AppendTextToLastError(std::string text, bool addNewLineBefore = true);
